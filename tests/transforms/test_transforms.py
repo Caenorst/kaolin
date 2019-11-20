@@ -73,7 +73,7 @@ def test_upsample_voxelgrid(device='cpu'):
 
 
 def test_triangle_mesh_to_pointcloud(device='cpu'):
-    mesh = TriangleMesh.from_obj('tests/model.obj') 
+    mesh = TriangleMesh.from_obj('tests/model.obj')
     mesh.to(device)
     mesh2cloud = kal.transforms.TriangleMeshToPointCloud(10000)
     pts = mesh2cloud(mesh)

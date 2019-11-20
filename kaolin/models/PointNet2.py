@@ -56,7 +56,7 @@ class FurthestPointSampling(torch.autograd.Function):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -93,7 +93,7 @@ class FPSGatherByIndex(torch.autograd.Function):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -138,7 +138,7 @@ class ThreeNN(torch.autograd.Function):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -184,7 +184,7 @@ class ThreeInterpolate(torch.autograd.Function):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -255,7 +255,7 @@ class GroupGatherByIndex(torch.autograd.Function):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -321,7 +321,7 @@ class BallQuery(torch.autograd.Function):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -377,7 +377,7 @@ def separate_xyz_and_features(points):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -416,7 +416,7 @@ class PointNet2GroupingLayer(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -496,7 +496,7 @@ class PointNet2SetAbstraction(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -667,7 +667,7 @@ class PointNet2FeaturePropagator(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -772,7 +772,7 @@ class PointNet2Classifier(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,
@@ -901,7 +901,7 @@ class PointNet2Segmenter(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2017pointnet2,

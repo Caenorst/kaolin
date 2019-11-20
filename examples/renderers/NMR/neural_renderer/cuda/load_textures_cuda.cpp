@@ -55,7 +55,7 @@ at::Tensor load_textures(
     CHECK_INPUT(textures);
 
     return load_textures_cuda(image, faces, textures, is_update, texture_wrapping, use_bilinear);
-                                      
+
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {

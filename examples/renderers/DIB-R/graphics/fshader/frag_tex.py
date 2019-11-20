@@ -31,12 +31,12 @@ from graphics.fshader.interpolation import texinterpolation
 def fragmentshader(imtexcoord_bxhxwx2, \
                    texture_bx3xthxtw, \
                    improb_bxhxwx1):
-    
+
     # interpolation
     texcolor_bxhxwx3 = texinterpolation(imtexcoord_bxhxwx2, texture_bx3xthxtw)
-    
+
     # mask
     color = texcolor_bxhxwx3 * improb_bxhxwx1
-    
+
     return torch.clamp(color, 0, 1)
 

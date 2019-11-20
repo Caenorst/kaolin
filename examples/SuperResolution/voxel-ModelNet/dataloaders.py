@@ -94,5 +94,5 @@ class EllipsoidsForNLL(data.Dataset):
         # tgt = torch.zeros(2, tgt_.shape[1], tgt_.shape[2], tgt_.shape[3])
         # cond = (tgt_[0] == 1).float()
         # tgt[1] = cond * tgt_ + (1 - cond) * tgt_
-        
+
         return inp, tgt

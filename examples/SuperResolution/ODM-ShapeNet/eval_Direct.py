@@ -9,7 +9,7 @@ from torch.utils.data import DataLoader
 from architectures import upscale
 from utils import down_sample, up_sample
 from dataloaders import ShapeNet_ODMS
-import kaolin as kal 
+import kaolin as kal
 
 
 parser = argparse.ArgumentParser()
@@ -41,14 +41,14 @@ num_batches = 0
 
 model.eval()
 with torch.no_grad():
-    for data in tqdm(dataloader_val): 
-        
+    for data in tqdm(dataloader_val):
+
         tgt_odms = data['odms_128'].to(args.device)
         tgt_voxels = data['voxels_128'].to(args.device)
         inp_odms = data['odms_32'].to(args.device)
         inp_voxels = data['voxels_32'].to(args.device)
 
-        # inference 
+        # inference
         pred_odms = model(inp_odms)*128
 
         NN_pred = up_sample(inp_voxels)
@@ -57,18 +57,18 @@ with torch.no_grad():
 
         pred_odms = pred_odms.int()
         pred_voxels = []
-        for odms, NN_odms in zip(pred_odms, NN_pred): 
+        for odms, NN_odms in zip(pred_odms, NN_pred):
             pred_voxels.append(kal.rep.voxel.project_odms(odms, voxel = NN_odms, votes = 2).unsqueeze(0))
         pred_voxels = torch.cat(pred_voxels)
 
         iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
         iou_epoch += iou
-        
 
-        
-        
-        if args.vis: 
-            for i in range(inp_voxels.shape[0]):    
+
+
+
+        if args.vis:
+            for i in range(inp_voxels.shape[0]):
                 print ('Rendering low resolution input')
                 kal.visualize.show_voxel(inp_voxels[i], mode = 'exact', thresh = .5)
                 print ('Rendering high resolution target')
@@ -76,7 +76,7 @@ with torch.no_grad():
                 print ('Rendering high resolution prediction')
                 kal.visualize.show_voxel(pred_voxels[i], mode = 'exact', thresh = .5)
                 print('----------------------')
-        num_batches += 1 
+        num_batches += 1
 
 out_iou_NN = iou_NN_epoch.item() / float(num_batches)
 print ('Nearest Neighbor Baseline IoU over validation set is {0}'.format(out_iou_NN))

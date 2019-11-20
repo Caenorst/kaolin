@@ -79,10 +79,10 @@ class Engine(object):
             tgt = data['128'].to(args.device)
             inp = data['32'].to(args.device)
 
-            # inference 
+            # inference
             pred = model(inp.unsqueeze(1))
 
-            # losses 
+            # losses
             loss = loss_fn(pred, tgt)
             loss.backward()
             loss_epoch += float(loss.item())

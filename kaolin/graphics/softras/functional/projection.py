@@ -1,9 +1,9 @@
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights

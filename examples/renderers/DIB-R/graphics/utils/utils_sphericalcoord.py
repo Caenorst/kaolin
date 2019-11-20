@@ -60,18 +60,18 @@ def get_spherical_coords_x(X):
 
 #########################################################################
 if __name__ == '__main__':
-    
+
     from utils.utils_mesh import loadobj, savemeshtes
     import cv2
-    
+
     p, f = loadobj('2.obj')
     uv = get_spherical_coords_x(p)
     uv[:, 0] = -uv[:, 0]
-    
+
     uv[:, 1] = -uv[:, 1]
     uv = (uv + 1) / 2
     savemeshtes(p, uv, f, './2_x.obj')
-    
+
     tex = np.zeros(shape=(256, 512, 3), dtype=np.uint8)
     font = cv2.FONT_HERSHEY_SIMPLEX
     bottomLeftCornerOfText = (10, 200)

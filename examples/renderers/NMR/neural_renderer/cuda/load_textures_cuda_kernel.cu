@@ -49,7 +49,7 @@ __global__ void load_textures_cuda_kernel(
     const scalar_t* image,
     const int32_t* is_update,
     scalar_t* faces,
-    scalar_t* __restrict__ textures, 
+    scalar_t* __restrict__ textures,
     int textures_size,
     int texture_size,
     int image_height,
@@ -151,7 +151,7 @@ at::Tensor load_textures_cuda(
     const auto texture_size = textures.size(1);
     const auto image_height = image.size(0);
     const auto image_width = image.size(1);
-    
+
     const int threads = 1024;
     const dim3 blocks ((textures_size / 3 - 1) / threads + 1);
 
@@ -170,7 +170,7 @@ at::Tensor load_textures_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in load_textures: %s\n", cudaGetErrorString(err));
     return textures;
 }

@@ -25,8 +25,8 @@ __device__
 }
 
 __device__
-    float dot2( float3 v ) { 
-    return dot(v,v); 
+    float dot2( float3 v ) {
+    return dot(v,v);
 }
 
 __device__
@@ -39,8 +39,8 @@ float clamp(float x, float a, float b)
 __device__
 	float3 cross(float3 a, float3 b)
 {
-  return make_float3(a.y*b.z - a.z*b.y, 
-  					a.z*b.x - a.x*b.z, 
+  return make_float3(a.y*b.z - a.z*b.y,
+  					a.z*b.x - a.x*b.z,
   					a.x*b.y - a.y*b.x
   					);
   	
@@ -103,7 +103,7 @@ __device__
 
 
 
-__global__ 
+__global__
 void TriangleDistanceKernel(
 	int b,
 	int n,
@@ -129,7 +129,7 @@ void TriangleDistanceKernel(
 			buf_3[j]=verts_3[k2*3+j];
 		}
 		__syncthreads();
-		for (int j=threadIdx.x+blockIdx.y*blockDim.x;j<n;j+=blockDim.x*gridDim.y){ // for points in a batch 
+		for (int j=threadIdx.x+blockIdx.y*blockDim.x;j<n;j+=blockDim.x*gridDim.y){ // for points in a batch
 			
 			float3 p = make_float3(points[ j *3+0], points[ j *3+1], points[ j *3+2]);
 			int best_i=0;
@@ -142,9 +142,9 @@ void TriangleDistanceKernel(
 				float3 v2 = make_float3(buf_2[k*3+0], buf_2[k*3+1], buf_2[k*3+2] );
 				float3 v3 = make_float3(buf_3[k*3+0], buf_3[k*3+1], buf_3[k*3+2] );
 
-				float3 v21 = v2 - v1; 
-			    float3 v32 = v3 - v2; 
-			    float3 v13 = v1 - v3; 
+				float3 v21 = v2 - v1;
+			    float3 v32 = v3 - v2;
+			    float3 v13 = v1 - v3;
 
 			    float3 p1 = p - v1;
 			    float3 p2 = p - v2;
@@ -154,10 +154,10 @@ void TriangleDistanceKernel(
 
 			    float sign_cond = signage(v21,nor,p1) + signage(v32,nor,p2) + signage( v13, nor, p3);
 
-			    float dist = 100; 
+			    float dist = 100;
 			    int type = 0;
 
-			    if (sign_cond < 2.0) { 
+			    if (sign_cond < 2.0) {
 			    	float dist1 = edge_distance( v21, p1 );
 			    	float dist2 = edge_distance( v32, p2 );
 			    	float dist3 = edge_distance( v13, p3 );

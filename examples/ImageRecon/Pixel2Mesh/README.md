@@ -10,7 +10,7 @@ python train.py
 ```
 
 
-### Evaluating the network: 
+### Evaluating the network:
 
 To evaluate a trained model
 ```

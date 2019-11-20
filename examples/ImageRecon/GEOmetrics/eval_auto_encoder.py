@@ -25,7 +25,7 @@ from tqdm import tqdm
 
 from architectures import MeshEncoder, VoxelDecoder
 from PIL import Image
-import kaolin as kal 
+import kaolin as kal
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-expid', type=str, default='Direct', help='Unique experiment identifier.')
@@ -57,7 +57,7 @@ num_items = 0
 
 encoder.eval(), decoder.eval()
 with torch.no_grad():
-    for i in tqdm(range(len(valid_set))): 
+    for i in tqdm(range(len(valid_set))):
         ###############################
         ####### data creation #########
         ###############################
@@ -65,7 +65,7 @@ with torch.no_grad():
         inp_verts = valid_set[i]['verts'].to(args.device)
         inp_faces = valid_set[i]['faces'].to(args.device)
         inp_adj = valid_set[i]['adj'].to(args.device)
-        
+
         ###############################
         ########## inference ##########
         ###############################
@@ -78,7 +78,7 @@ with torch.no_grad():
 
         iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels.contiguous())
 
-        if args.vis: 
+        if args.vis:
             tgt_mesh = kal.rep.TriangleMesh.from_tensors(inp_verts, inp_faces)
             print ('Rendering Input Mesh')
             tgt_mesh.show()

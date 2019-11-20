@@ -11,14 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
-# 
+#
+#
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -71,7 +71,7 @@ class SoftRenderer(DifferentiableRenderer):
             aggr_func_alpha: str = 'prod',
             texture_type: str = 'surface',
             viewing_angle: float = 30.,
-            viewing_scale: float = 1.0, 
+            viewing_scale: float = 1.0,
             eye: torch.Tensor = None,
             camera_direction: torch.Tensor = torch.FloatTensor([0, 0, 1]),
             near: float = 0.1, far: float = 100,

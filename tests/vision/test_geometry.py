@@ -27,9 +27,9 @@ from kaolin.vision import *
 def test_project_unproject():
     pts = torch.rand(20, 3)
     # intrinsics = torch.rand(4, 4)
-    intrinsics = torch.FloatTensor([[720, 0, 120, 0], 
-                                    [0, 720, 90, 0], 
-                                    [0, 0, 1, 0], 
+    intrinsics = torch.FloatTensor([[720, 0, 120, 0],
+                                    [0, 720, 90, 0],
+                                    [0, 0, 1, 0],
                                     [0, 0, 0, 1]])
     img_pts = project_points(pts, intrinsics)
     # depths = torch.rand(pts.shape[0]) + 1.
@@ -41,9 +41,9 @@ def test_project_unproject():
 def test_unproject_project():
     img_pts = torch.rand(20, 2)
     depths = torch.rand(20) + 1.
-    intrinsics = torch.FloatTensor([[720, 0, 120, 0], 
-                                    [0, 720, 90, 0], 
-                                    [0, 0, 1, 0], 
+    intrinsics = torch.FloatTensor([[720, 0, 120, 0],
+                                    [0, 720, 90, 0],
+                                    [0, 0, 1, 0],
                                     [0, 0, 0, 1]])
     cam_pts = unproject_points(img_pts, depths, intrinsics)
     img_pts_reproj = project_points(cam_pts, intrinsics)
@@ -52,9 +52,9 @@ def test_unproject_project():
 
 def test_project_unproject_batch():
     pts = torch.rand(10, 20, 3)
-    intrinsics = torch.FloatTensor([[720, 0, 120, 0], 
-                                    [0, 720, 90, 0], 
-                                    [0, 0, 1, 0], 
+    intrinsics = torch.FloatTensor([[720, 0, 120, 0],
+                                    [0, 720, 90, 0],
+                                    [0, 0, 1, 0],
                                     [0, 0, 0, 1]])
     intrinsics = intrinsics.repeat(10, 1, 1)
     img_pts = project_points(pts, intrinsics)
@@ -66,9 +66,9 @@ def test_project_unproject_batch():
 def test_unproject_project_batch():
     img_pts = torch.rand(10, 20, 2)
     depths = torch.rand(10, 20) + 1.
-    intrinsics = torch.FloatTensor([[720, 0, 120, 0], 
-                                    [0, 720, 90, 0], 
-                                    [0, 0, 1, 0], 
+    intrinsics = torch.FloatTensor([[720, 0, 120, 0],
+                                    [0, 720, 90, 0],
+                                    [0, 0, 1, 0],
                                     [0, 0, 0, 1]])
     intrinsics = intrinsics.repeat(10, 1, 1)
     cam_pts = unproject_points(img_pts, depths, intrinsics)

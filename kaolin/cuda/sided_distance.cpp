@@ -31,10 +31,10 @@ void SidedDistanceKernelLauncher(
 
 
 void sided_distance_forward(
-    const at::Tensor xyz1, 
-    const at::Tensor xyz2, 
-    const at::Tensor dist1, 
-    const at::Tensor idx1) 
+    const at::Tensor xyz1,
+    const at::Tensor xyz2,
+    const at::Tensor dist1,
+    const at::Tensor idx1)
 {
     SidedDistanceKernelLauncher(xyz1.size(0), xyz1.size(1), xyz1.data<float>(),
                                             xyz2.size(1), xyz2.data<float>(),

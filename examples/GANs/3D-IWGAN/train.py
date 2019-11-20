@@ -27,7 +27,7 @@ from tqdm import tqdm
 from utils import gradient_penalty, calculate_gradient_penalty
 from architectures import Generator, Discriminator
 
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -48,17 +48,17 @@ args = parser.parse_args()
 cats = ['airplane','bathtub','bed','bench','bookshelf','bottle','bowl','car','chair','cone','cup',
 'curtain','desk','door','dresser','flower_pot','glass_box','guitar','keyboard','lamp',
 'laptop','mantel','monitor','night_stand','person','piano','plant','radio','range_hood',
-'sink','sofa','stairs','stool','table','tent','toilet','tv_stand','vase','wardrobe','xbox']   
+'sink','sofa','stairs','stool','table','tent','toilet','tv_stand','vase','wardrobe','xbox']
 """
 Dataset
 """
 train_set = kal.datasets.ModelNet(root ='../../datasets/',categories = args.categories, \
             single_view= True, download = True)
-dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True, 
+dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True,
     num_workers=8)
 
 """
-Model settings 
+Model settings
 """
 
 
@@ -79,7 +79,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 class Engine(object):
     """Engine that runs training and inference.
@@ -87,7 +87,7 @@ class Engine(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -106,7 +106,7 @@ class Engine(object):
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optim_g.zero_grad(), gen.zero_grad()
             optim_d.zero_grad(), dis.zero_grad()
-            
+
             # data creation
             real_voxels = torch.zeros(data['data'].shape[0], 32, 32, 32).to(args.device)
             real_voxels[:,1:-1,1:-1,1:-1] = data['data'].to(args.device)
@@ -119,35 +119,35 @@ class Engine(object):
             d_on_real = torch.mean(dis(real_voxels))
             gp_loss = 10*calculate_gradient_penalty(dis, real_voxels.data, fake_voxels.data)
             d_loss = -d_on_real + d_on_fake + gp_loss
-            
-            
-            if i %5 == 0: 
+
+
+            if i %5 == 0:
                 g_loss = -d_on_fake
                 g_loss.backward()
                 optim_g.step()
-            else: 
+            else:
                 d_loss.backward()
                 optim_d.step()
-    
+
             # logging
             num_batches += 1
             if i % args.print_every == 0:
                 message = f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}: gen: {float(g_loss.item()):2.3f}'
                 message += f' dis = {float(d_loss.item()):2.3f}, gp = {float(gp_loss.item()):2.3f}'
                 tqdm.write(message)
-        
-        
-        
+
+
+
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
-    
+
+
+
     def save(self):
 
-    
-        
+
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch
@@ -163,13 +163,13 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
 
-            
-    
+
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
-    if epoch % 5 == 4: 
+    if epoch % 5 == 4:
         trainer.save()

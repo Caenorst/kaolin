@@ -27,7 +27,7 @@ import random
 
 from architectures import MeshEncoder, VoxelDecoder
 
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -70,7 +70,7 @@ valid_set = kal.datasets.ShapeNet.Combination([mesh_set, voxel_set], root='../..
 
 
 """
-Model settings 
+Model settings
 """
 encoder = MeshEncoder(30).to(args.device)
 decoder = VoxelDecoder(30).to(args.device)
@@ -78,7 +78,7 @@ decoder = VoxelDecoder(30).to(args.device)
 
 
 
-parameters =  list(encoder.parameters()) +  list(decoder.parameters()) 
+parameters =  list(encoder.parameters()) +  list(decoder.parameters())
 optimizer = optim.Adam(parameters, lr=args.lr)
 
 loss_fn = torch.nn.MSELoss()
@@ -93,7 +93,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 class Engine(object):
     """Engine that runs training and inference.
@@ -101,7 +101,7 @@ class Engine(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -116,14 +116,14 @@ class Engine(object):
         encoder.train(), decoder.train()
 
         # Train loop
-        for i in tqdm(range(len(train_set)//args.batch_size)): 
-            from time import time 
-            
+        for i in tqdm(range(len(train_set)//args.batch_size)):
+            from time import time
+
             tgt_voxels = []
             latent_encodings = []
             for j in range(args.batch_size):
                 optimizer.zero_grad()
-                
+
             ###############################
             ####### data creation #########
             ###############################
@@ -131,12 +131,12 @@ class Engine(object):
                 tgt_voxels.append(train_set[selection]['32'].to(args.device).unsqueeze(0))
                 inp_verts = train_set[selection]['verts'].to(args.device)
                 inp_adj = train_set[selection]['adj'].to(args.device)
-                
+
             ###############################
             ########## inference ##########
             ###############################
                 latent_encodings.append(encoder(inp_verts, inp_adj).unsqueeze(0))
-            
+
             tgt_voxels = torch.cat(tgt_voxels)
             latent_encodings = torch.cat(latent_encodings)
             pred_voxels = decoder(latent_encodings)
@@ -159,28 +159,28 @@ class Engine(object):
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
+
+
     def validate(self):
         encoder.eval(), decoder.eval()
-        with torch.no_grad():   
+        with torch.no_grad():
             num_batches = 0
             iou_epoch = 0.
 
             # Validation loop
-            for i in tqdm(range(len(valid_set)//args.batch_size)): 
+            for i in tqdm(range(len(valid_set)//args.batch_size)):
                 tgt_voxels = []
                 latent_encodings = []
                 for j in range(args.batch_size):
                     optimizer.zero_grad()
-                    
+
                 ###############################
                 ####### data creation #########
                 ###############################
                     tgt_voxels.append(valid_set[i*args.batch_size + j]['32'].to(args.device).unsqueeze(0))
                     inp_verts = valid_set[i*args.batch_size + j]['verts'].to(args.device)
                     inp_adj = valid_set[i*args.batch_size + j]['adj'].to(args.device)
-                    
+
                 ###############################
                 ########## inference ##########
                 ###############################
@@ -193,7 +193,7 @@ class Engine(object):
                 ###############################
                 ########## losses #############
                 ###############################
-            
+
                 iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
                 iou_epoch += iou
 
@@ -202,7 +202,7 @@ class Engine(object):
                 if i % args.print_every == 0:
                         out_iou = iou_epoch.item() / float(num_batches)
                         tqdm.write(f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}: IoU: {out_iou}')
-                        
+
             out_iou = iou_epoch.item() / float(num_batches)
             tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: IoU: {out_iou}')
             self.val_loss.append(out_iou)
@@ -213,7 +213,7 @@ class Engine(object):
         if self.val_loss[-1] >= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -225,7 +225,7 @@ class Engine(object):
         }
 
         # Save the recent model/optimizer states
-        
+
         torch.save(encoder.state_dict(), os.path.join(args.logdir, 'auto_encoder.pth'))
         torch.save(decoder.state_dict(), os.path.join(args.logdir, 'auto_decoder.pth'))
         torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'recent_optim.pth'))
@@ -234,21 +234,21 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
-            
+
             torch.save(encoder.state_dict(), os.path.join(args.logdir, 'auto_best_encoder.pth'))
             torch.save(decoder.state_dict(), os.path.join(args.logdir, 'auto_best_decoder.pth'))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
             tqdm.write('====== Overwrote best model ======>')
-            
-    
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
-    if epoch % 1 == 0: 
+    if epoch % 1 == 0:
         trainer.validate()
         trainer.save()
-        
-        
+
+

@@ -99,7 +99,7 @@ __device__ __forceinline__ void barycentric_clip(scalar_t *w) {
 
 template <typename scalar_t>
 __device__ __forceinline__ void euclidean_p2f_distance(scalar_t &sign, scalar_t &dis_x, scalar_t &dis_y,
-                                                       scalar_t *w, scalar_t *t, 
+                                                       scalar_t *w, scalar_t *t,
                                                        const scalar_t* face, const scalar_t *face_info,
                                                        const scalar_t xp, const scalar_t yp) {
     const scalar_t *face_sym = face_info + 9;
@@ -303,7 +303,7 @@ __global__ void forward_soft_rasterize_inv_cuda_kernel(
     for (int j = 0; j < 3; j++) {
         for (int k = 0; k < 3; k++) {
             face_sym[j * 3 + k] = face[j * 3 + 0] * face[k * 3 + 0] +
-                                  face[j * 3 + 1] * face[k * 3 + 1] + 
+                                  face[j * 3 + 1] * face[k * 3 + 1] +
                                   1;
         }
     }
@@ -426,7 +426,7 @@ __global__ void forward_soft_rasterize_cuda_kernel(
         } else
         if (func_id_alpha == 1) { // Sum
             soft_color[3] += soft_fragment;
-        } else 
+        } else
         if (func_id_alpha == 2) { // Logical-Or
             soft_color[3] *= 1. - soft_fragment;
         }
@@ -475,7 +475,7 @@ __global__ void forward_soft_rasterize_cuda_kernel(
     } else
     if (func_id_alpha == 1) {
         soft_colors[(bn * 4 + 3) * (is * is) + pn] =  soft_color[3] / nf;
-    } else 
+    } else
     if (func_id_alpha == 2) {
         soft_colors[(bn * 4 + 3) * (is * is) + pn] =  1. - soft_color[3];
     }
@@ -600,7 +600,7 @@ __global__ void backward_soft_rasterize_cuda_kernel(
         } else
         if (func_id_alpha == 1) { // Sum
             C_grad_xy_alpha /= nf;
-        } else 
+        } else
         if (func_id_alpha == 2) { // Logical-Or
             C_grad_xy_alpha *= (1 - soft_colors[(bn * 4 + 3) * (is * is) + pn]) / max(1 - soft_fragment, 1e-6);
         }
@@ -715,7 +715,7 @@ std::vector<at::Tensor> forward_soft_rasterize_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in forward_transform_inv_triangle: %s\n", cudaGetErrorString(err));
 
     const dim3 blocks_2 ((batch_size * image_size * image_size - 1) / threads +1);
@@ -746,7 +746,7 @@ std::vector<at::Tensor> forward_soft_rasterize_cuda(
       }));
 
     err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
         printf("Error in forward_soft_rasterize: %s\n", cudaGetErrorString(err));
 
     return {faces_info, aggrs_info, soft_colors};
@@ -756,7 +756,7 @@ std::vector<at::Tensor> forward_soft_rasterize_cuda(
 std::vector<at::Tensor> backward_soft_rasterize_cuda(
         at::Tensor faces,
         at::Tensor textures,
-        at::Tensor soft_colors,        
+        at::Tensor soft_colors,
         at::Tensor faces_info,
         at::Tensor aggrs_info,
         at::Tensor grad_faces,
@@ -811,7 +811,7 @@ std::vector<at::Tensor> backward_soft_rasterize_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
         printf("Error in backward_soft_rasterize: %s\n", cudaGetErrorString(err));
 
     return {grad_faces, grad_textures};

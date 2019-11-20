@@ -14,8 +14,8 @@
 
 import math
 
-import torch 
-from torch import nn 
+import torch
+from torch import nn
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 
@@ -30,7 +30,7 @@ class SimpleGCN(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{kipf2016semi,
@@ -61,20 +61,20 @@ class SimpleGCN(nn.Module):
             self.bias.data.uniform_(-.1, .1)
 
     def forward(self, input, adj):
-        
+
         support = torch.mm(input, self.weight1)
         side_len = max(support.shape[1]//3, 2)
-        if adj.type() == 'torch.cuda.sparse.FloatTensor': 
-         
+        if adj.type() == 'torch.cuda.sparse.FloatTensor':
+
             norm = torch.sparse.mm(adj,torch.ones((support.shape[0], 1)).cuda())
             normalized_support = support[:, :side_len] /norm
             side_1 = torch.sparse.mm(adj, normalized_support)
-        else: 
+        else:
             side_1 = torch.mm(adj, support[:, :side_len])
-        
+
         side_2 = support[:,side_len: ]
         output = torch.cat((side_1, side_2), dim = 1)
-        
+
         if self.bias is not None:
             output = output + self.bias
         return output

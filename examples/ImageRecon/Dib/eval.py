@@ -26,7 +26,7 @@ from graphics.utils.utils_perspective import  perspectiveprojectionnp
 
 from utils import preprocess, collate_fn, normalize_adj
 from architectures import Encoder
-import kaolin as kal 
+import kaolin as kal
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-expid', type=str, default='Direct', help='Unique experiment identifier.')
@@ -53,10 +53,10 @@ dataloader_val = DataLoader(valid_set, batch_size=args.batchsize, shuffle=False,
 mesh = kal.rep.TriangleMesh.from_obj('386.obj', enable_adjacency= True)
 mesh.cuda()
 normalize_adj(mesh)
-    
+
 
 initial_verts = mesh.vertices.clone()
-camera_fov_y = 49.13434207744484 * np.pi/ 180.0 
+camera_fov_y = 49.13434207744484 * np.pi/ 180.0
 cam_proj = perspectiveprojectionnp(camera_fov_y, 1.0 )
 cam_proj =  torch.FloatTensor(cam_proj).cuda()
 model = Encoder(4, 5, args.batchsize, 137, mesh.vertices.shape[0] ).cuda()
@@ -72,7 +72,7 @@ loss_fn = kal.metrics.point.chamfer_distance
 
 model.eval()
 with torch.no_grad():
-    for data in tqdm(dataloader_val): 
+    for data in tqdm(dataloader_val):
         # data creation
         tgt_points = data['points'].cuda()
         inp_images = data['imgs'].cuda()
@@ -83,32 +83,32 @@ with torch.no_grad():
         gt_verts = data['verts']
         gt_faces = data['faces']
 
-        # inference 
+        # inference
         delta_verts = model(inp_images)
 
-        # set viewing parameters 
+        # set viewing parameters
         renderer.camera_params = [cam_mat, cam_pos, cam_proj]
-    
+
         # predict mesh properties
         delta_verts, colours = model(inp_images)
         pred_verts = initial_verts + delta_verts
-    
+
         # render image
         image_pred, _, _ = renderer.forward(points=[(pred_verts*.57 ), mesh.faces], colors=[colours])
-        
-        # mesh loss
-        
-        for verts, tgt, inp_img, pred_img, gt_v, gt_f in zip(pred_verts, tgt_points, inp_images, image_pred, gt_verts, gt_faces):   
-            mesh.vertices = verts
-            pred_points, _ = mesh.sample(3000)  
-            loss_epoch += 3000 * loss_fn(pred_points, tgt).item() / float(args.batchsize)   
 
-            if args.f_score: 
-            
+        # mesh loss
+
+        for verts, tgt, inp_img, pred_img, gt_v, gt_f in zip(pred_verts, tgt_points, inp_images, image_pred, gt_verts, gt_faces):
+            mesh.vertices = verts
+            pred_points, _ = mesh.sample(3000)
+            loss_epoch += 3000 * loss_fn(pred_points, tgt).item() / float(args.batchsize)
+
+            if args.f_score:
+
                 f_score = kal.metrics.point.f_score(tgt, pred_points, extend = False)
                 f_epoch += (f_score  / float(args.batchsize)).item()
 
-            if args.vis: 
+            if args.vis:
                 tgt_mesh = meshes_set_valid[num_items]
                 tgt_mesh = kal.rep.TriangleMesh.from_tensors(gt_v, gt_f)
 
@@ -131,11 +131,11 @@ with torch.no_grad():
                 num_items += 1
 
 
-        
+
         num_batches += 1.
 
 out_loss = loss_epoch / float(num_batches)
 print ('Loss over validation set is {0}'.format(out_loss))
-if args.f_score: 
+if args.f_score:
     out_f = f_epoch / float(num_batches)
     print ('F-score over validation set is {0}'.format(out_f))

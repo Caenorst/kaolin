@@ -133,7 +133,7 @@ __global__ void create_texture_image_boundary_cuda_kernel(
     const int y = i / (tile_width * texture_size_out);
     if ((y % texture_size_out + 1) == (x % texture_size_out)) {
       for (int k = 0; k < 3; k++)
-          image[i * 3 + k] = 
+          image[i * 3 + k] =
               image[ (y * tile_width * texture_size_out + (x - 1))  * 3 + k];
     }
 }
@@ -168,7 +168,7 @@ at::Tensor create_texture_image_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
         printf("Error in create_texture_image: %s\n", cudaGetErrorString(err));
 
     AT_DISPATCH_FLOATING_TYPES(image.type(), "create_texture_image_boundary", ([&] {
@@ -180,7 +180,7 @@ at::Tensor create_texture_image_cuda(
       }));
 
     err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
         printf("Error in create_texture_image_boundary: %s\n", cudaGetErrorString(err));
 
     return image;

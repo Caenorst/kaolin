@@ -1,4 +1,4 @@
-import torch 
+import torch
 from torch import nn
 import torch.nn.functional as F
 
@@ -29,7 +29,7 @@ class MeshEncoder(nn.Module):
         self.h9 = SimpleGCN(300, 300)
         self.h10 = SimpleGCN(300, 300)
         self.h11 = SimpleGCN(300, 300)
-        self.reduce = SimpleGCN(300,latent_length) 
+        self.reduce = SimpleGCN(300,latent_length)
 
     def resnet( self, features, res):
         temp = features[:,:res.shape[1]]
@@ -56,6 +56,6 @@ class MeshEncoder(nn.Module):
         features = F.elu(self.h10(features, adj))
         features = F.elu(self.h11(features, adj))
 
-        latent = F.elu(self.reduce(features , adj))  
-        latent = (torch.max(latent, dim = 0)[0])      
+        latent = F.elu(self.reduce(features , adj))
+        latent = (torch.max(latent, dim = 0)[0])
         return latent

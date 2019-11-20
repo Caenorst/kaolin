@@ -28,7 +28,7 @@ import torch.nn.functional as F
 import torch.distributions as dist
 from architectures import OccupancyNetwork
 
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -70,7 +70,7 @@ dataloader_val = DataLoader(valid_set, batch_size=5, shuffle=False, num_workers=
 
 
 """
-Model settings 
+Model settings
 """
 
 
@@ -95,7 +95,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 class Engine(object):
     """Engine that runs training and inference.
@@ -103,7 +103,7 @@ class Engine(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -121,7 +121,7 @@ class Engine(object):
         # Train loop
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optimizer.zero_grad()
-            
+
             ###############################
             ####### data creation #########
             ###############################
@@ -138,35 +138,35 @@ class Engine(object):
             ###############################
             ########## losses #############
             ###############################
-            loss = F.binary_cross_entropy_with_logits(pred_occ, gt_occ).mean()  
+            loss = F.binary_cross_entropy_with_logits(pred_occ, gt_occ).mean()
             loss.backward()
             loss_epoch += float(loss.item())
 
-            
+
             num_batches += 1
             if i % args.print_every == 0:
                 message = f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, Loss: {(loss.item()):4.3f}'
                 tqdm.write(message)
             optimizer.step()
-        
-        
+
+
         loss_epoch = loss_epoch / num_batches
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-    
+
 
     def validate_iou(self):
         model.encoder.eval()
         model.decoder.eval()
-        with torch.no_grad():   
+        with torch.no_grad():
             num_batches = 0
             iou_epoch = 0.
 
             # Validation loop
             for i, data in enumerate(tqdm(dataloader_val), 0):
                 optimizer.zero_grad()
-                
+
                 ###############################
                 ####### data creation #########
                 ###############################
@@ -183,16 +183,16 @@ class Engine(object):
                 ###############################
                 ########## losses #############
                 ###############################
-            
+
                 for pt1, pt2 in zip(gt_occ, pred_occ):
                     iou_epoch += float((kal.metrics.point.iou(pt1, pt2, thresh=.2) / float(gt_occ.shape[0])).item())
-                
+
 
                 num_batches += 1
                 if i % args.print_every == 0:
                     out_loss = iou_epoch / float(num_batches)
                     tqdm.write(f'[VAL IoU] Epoch {self.cur_epoch:03d}, Batch {i:03d}: iou: {out_loss:3.3f}')
-                    
+
             out_loss = iou_epoch / float(num_batches)
             tqdm.write(f'[VAL IoU Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: iou: {out_loss:3.3f}')
 
@@ -204,7 +204,7 @@ class Engine(object):
         if self.val_loss[-1] >= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -216,7 +216,7 @@ class Engine(object):
         }
 
         # Save the recent model/optimizer states
-        
+
         torch.save(model.encoder.state_dict(), os.path.join(args.logdir, 'encoder.pth'))
         torch.save(model.decoder.state_dict(), os.path.join(args.logdir, 'decoder.pth'))
         torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'recent_optim.pth'))
@@ -225,21 +225,21 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
             torch.save(model.encoder.state_dict(), os.path.join(args.logdir, 'best_encoder.pth'))
             torch.save(model.decoder.state_dict(), os.path.join(args.logdir, 'best_decoder.pth'))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
             tqdm.write('====== Overwrote best model ======>')
-            
-    
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
-    if epoch % 4 == 0: 
+    if epoch % 4 == 0:
         trainer.validate_iou()
         trainer.save()
-        
+
 
 

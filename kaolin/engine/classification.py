@@ -215,7 +215,7 @@ class ClassificationEngine(Engine):
         for epoch in range(self.engineparams['epochs']):
 
             # Train phase
-            
+
             self.train_loss_cur_epoch = 0.
             self.train_accuracy_cur_epoch = 0.
             self.batch_idx = 0

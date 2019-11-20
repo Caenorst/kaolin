@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch 
+import torch
 import numpy as np
 from torchvision import transforms
-from torchvision.transforms import Normalize as norm 
+from torchvision.transforms import Normalize as norm
 
 
 np.random.seed(1)
@@ -30,22 +30,22 @@ def gradient_penalty(netD, real_data, fake_data):
     alpha = alpha.view(batch_size, 32, 32, 32)
     alpha = alpha.cuda()
 
-    
+
     fake_data = fake_data.view(batch_size, 32, 32, 32)
     interpolates = alpha * real_data.detach() + ((1 - alpha) * fake_data.detach())
-    
-    
+
+
     interpolates.requires_grad_(True)
 
     disc_interpolates = netD(interpolates)
-    
+
 
     gradients = torch.autograd.grad(outputs=disc_interpolates, inputs=interpolates,
                               grad_outputs=torch.ones(disc_interpolates.size()).cuda(),
                               create_graph=True, retain_graph=True)[0]
-    
 
-                            
+
+
     gradient_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
     return gradient_penalty
 
@@ -56,25 +56,25 @@ def calculate_gradient_penalty(netD, real_images, fake_images):
         eta = eta.expand(batch_size, int(real_images.nelement()/batch_size)).contiguous()
         eta = eta.view(batch_size, 32, 32, 32)
         eta = eta.cuda()
-        
-      
+
+
 
         interpolated = eta * real_images + ((1 - eta) * fake_images)
-        
-        
+
+
 
         # define it to calculate gradient
         interpolated.requires_grad_(True)
 
         # calculate probability of interpolated examples
         prob_interpolated = netD(interpolated)
-        
+
 
         # calculate gradients of probabilities with respect to examples
         gradients = torch.autograd.grad(outputs=prob_interpolated, inputs=interpolated,
                                grad_outputs=torch.ones(
                                    prob_interpolated.size()).cuda(),
                                create_graph=True, retain_graph=True)[0]
-    
+
         grad_penalty = ((gradients.norm(2, dim=1) - 1) ** 2).mean()
         return grad_penalty

@@ -25,14 +25,14 @@ from torch.utils.data import DataLoader
 
 # Tests below can only be run is a ShapeNet dataset is available
 
-# def test_ModelNet(device = 'cpu'): 
-    
+# def test_ModelNet(device = 'cpu'):
+
 #   models = kal.datasets.ModelNet(root = 'datasets', categories = ['chair'], train = True)
-    
+
 #   assert len(models) == 889
-#   for obj in models: 
+#   for obj in models:
 #       assert obj['class'] == 'chair'
-#       assert set(obj['data'].shape) == set([30,30,30]) 
+#       assert set(obj['data'].shape) == set([30,30,30])
 #   shutil.rmtree('datasets/')
 
 

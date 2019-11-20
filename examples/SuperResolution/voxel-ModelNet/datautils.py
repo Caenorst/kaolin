@@ -63,7 +63,7 @@ def sample_on_ellipsoid(numpts, radius=(1.,1.,1.), rot=(0.,0.,0.), trans=(0.,0.,
 
 
 def generate_ellipsoid_voxels(radius, rot, trans, res_in=16, res_out=32, voxsize=1.):
-    """Generate a voxel grid containing an ellipsoid. One low-res grid, corresponding to 
+    """Generate a voxel grid containing an ellipsoid. One low-res grid, corresponding to
     the input, and it's respective hi-res version.
 
     Params:
@@ -91,13 +91,13 @@ if __name__ == '__main__':
 
     # Debug mode (visualize)
     if args.debug:
-        
+
         # Generate points on ellipsoid
         # pts = sample_on_ellipsoid(args.numpts, radius=(1.,2.,1.), rot=(0.86,0.,0.), \
         #   trans=(1.0,0.5,0.))
         pts, in_voxels, out_voxels = generate_ellipsoid_voxels(radius=(1.,2.,1.), \
             rot=(0.86,0.,0.), trans=(0.2,0.3,0), voxsize=0.2)
-        
+
         import matplotlib
         from matplotlib import pyplot as plt
         from mpl_toolkits.mplot3d import axes3d
@@ -133,7 +133,7 @@ if __name__ == '__main__':
         trans = (np.random.uniform(args.trans_min, args.trans_max), \
             np.random.uniform(args.trans_min, args.trans_max), \
             np.random.uniform(args.trans_min, args.trans_max))
-        
+
         # Generate ellipsoid data sample
         pts, in_voxels, out_voxels = generate_ellipsoid_voxels(radius=rad, rot=rot, \
             trans=trans, res_in=args.res_in, res_out=args.res_out, voxsize=args.voxsize)

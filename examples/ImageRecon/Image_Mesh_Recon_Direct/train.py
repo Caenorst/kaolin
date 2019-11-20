@@ -26,7 +26,7 @@ from tqdm import tqdm
 from utils import preprocess, loss_lap
 from architectures import Encoder
 
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -55,7 +55,7 @@ images_set = kal.datasets.ShapeNet.Images(root ='../../datasets/',categories =ar
     download = True, train = True,  split = .7, views=23, transform= preprocess )
 train_set = kal.datasets.ShapeNet.Combination([points_set, images_set], root='../../datasets/')
 
-dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True, 
+dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True,
     num_workers=8)
 
 
@@ -66,16 +66,16 @@ images_set_valid = kal.datasets.ShapeNet.Images(root ='../../datasets/',categori
     download = True, train = False,  split = .7, views=1, transform= preprocess )
 valid_set = kal.datasets.ShapeNet.Combination([points_set_valid, images_set_valid], root='../../datasets/')
 
-dataloader_val = DataLoader(valid_set, batch_size=args.batchsize, shuffle=False, 
+dataloader_val = DataLoader(valid_set, batch_size=args.batchsize, shuffle=False,
     num_workers=8)
 
 
 
 """
-Model settings 
+Model settings
 """
 mesh = kal.rep.TriangleMesh.from_obj('386.obj')
-if args.device == "cuda": 
+if args.device == "cuda":
     mesh.cuda()
 initial_verts = mesh.vertices.clone()
 
@@ -99,7 +99,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 class Engine(object):
     """Engine that runs training and inference.
@@ -107,7 +107,7 @@ class Engine(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -124,19 +124,19 @@ class Engine(object):
         # Train loop
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optimizer.zero_grad()
-            
+
             # data creation
             tgt_points = data['points'].to(args.device)
             inp_images = data['imgs'].to(args.device)
 
-            # inference 
+            # inference
             delta_verts = model(inp_images)
 
-            # losses 
-            surf_loss = 0. 
+            # losses
+            surf_loss = 0.
             edge_loss = 0.
             lap_loss = 0.
-            for deltas, tgt in zip(delta_verts, tgt_points):    
+            for deltas, tgt in zip(delta_verts, tgt_points):
                 mesh.vertices = deltas + initial_verts
                 pred_points, _ = mesh.sample(3000)
                 surf_loss += 3000 * loss_fn(pred_points, tgt) / float(args.batchsize)
@@ -153,17 +153,17 @@ class Engine(object):
             if i % args.print_every == 0:
                 tqdm.write(f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}: Loss: {float(surf_loss.item()):3.3f}, Edge: {float(edge_loss.item()):3.3f}, lap: {float(lap_loss.item()):3.3f}')
             optimizer.step()
-        
-        
+
+
         loss_epoch = loss_epoch / num_batches
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
+
+
     def validate(self):
         model.eval()
-        with torch.no_grad():   
+        with torch.no_grad():
             num_batches = 0
             loss_epoch = 0.
 
@@ -174,12 +174,12 @@ class Engine(object):
                 tgt_points = data['points'].to(args.device)
                 inp_images = data['imgs'].to(args.device)
 
-                # inference 
+                # inference
                 delta_verts = model(inp_images)
 
-                # losses 
-                loss = 0. 
-                for deltas, tgt in zip(delta_verts, tgt_points):    
+                # losses
+                loss = 0.
+                for deltas, tgt in zip(delta_verts, tgt_points):
                     mesh.vertices = deltas + initial_verts
                     pred_points, _ = mesh.sample(3000)
 
@@ -191,7 +191,7 @@ class Engine(object):
                 if i % args.print_every == 0:
                         out_loss = loss_epoch / float(num_batches)
                         tqdm.write(f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss}')
-                        
+
             out_loss = loss_epoch / float(num_batches)
             tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss}')
 
@@ -203,7 +203,7 @@ class Engine(object):
         if self.val_loss[-1] <= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -220,16 +220,16 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
             torch.save(model.state_dict(), os.path.join(args.logdir, 'best.pth'))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
             tqdm.write('====== Overwrote best model ======>')
-            
-    
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
     if epoch %4 == 0:
         trainer.validate()

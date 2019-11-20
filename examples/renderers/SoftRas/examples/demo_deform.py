@@ -66,7 +66,7 @@ class Model(nn.Module):
         laplacian_loss = self.laplacian_loss(vertices).mean()
         flatten_loss = self.flatten_loss(vertices).mean()
 
-        return sr.Mesh(vertices.repeat(batch_size, 1, 1), 
+        return sr.Mesh(vertices.repeat(batch_size, 1, 1),
                        self.faces.repeat(batch_size, 1, 1)), laplacian_loss, flatten_loss
 
 
@@ -79,13 +79,13 @@ def neg_iou_loss(predict, target):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--filename-input', type=str, 
+    parser.add_argument('-i', '--filename-input', type=str,
         default=os.path.join(data_dir, 'source.npy'))
-    parser.add_argument('-c', '--camera-input', type=str, 
+    parser.add_argument('-c', '--camera-input', type=str,
         default=os.path.join(data_dir, 'camera.npy'))
-    parser.add_argument('-t', '--template-mesh', type=str, 
+    parser.add_argument('-t', '--template-mesh', type=str,
         default=os.path.join(data_dir, 'obj/sphere/sphere_642.obj'))
-    parser.add_argument('-o', '--output-dir', type=str, 
+    parser.add_argument('-o', '--output-dir', type=str,
         default=os.path.join(data_dir, 'results/output_deform'))
     parser.add_argument('-b', '--batch-size', type=int,
         default=120)
@@ -94,7 +94,7 @@ def main():
     os.makedirs(args.output_dir, exist_ok=True)
 
     model = Model(args.template_mesh).cuda()
-    renderer = sr.SoftRenderer(image_size=64, sigma_val=3e-5, aggr_func_rgb='hard', 
+    renderer = sr.SoftRenderer(image_size=64, sigma_val=3e-5, aggr_func_rgb='hard',
                                camera_mode='look_at')
 
     images = np.load(args.filename_input).astype('float32') / 255.

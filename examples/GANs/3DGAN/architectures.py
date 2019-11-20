@@ -28,7 +28,7 @@ class Generator(nn.Module):
     def __init__(self):
         super(Generator, self).__init__()
 
-    
+
         self.layer1 = torch.nn.Sequential(
             torch.nn.ConvTranspose3d(200, 512, 4, 2, 0 ),
             torch.nn.BatchNorm3d(512),
@@ -48,10 +48,10 @@ class Generator(nn.Module):
             torch.nn.ConvTranspose3d(128, 1, 4, 2, 1 ),
             torch.nn.Sigmoid()
         )
-        
 
-    
-        
+
+
+
 
 
     def forward(self, x):
@@ -70,7 +70,7 @@ class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
 
-    
+
         self.layer1 = torch.nn.Sequential(
             torch.nn.Conv3d(1, 64, 4, 2, 1),
             torch.nn.BatchNorm3d(64),
@@ -96,8 +96,8 @@ class Discriminator(nn.Module):
             torch.nn.Sigmoid()
         )
 
-    
-        
+
+
 
 
     def forward(self, x):

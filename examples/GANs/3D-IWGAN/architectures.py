@@ -75,7 +75,7 @@ class Discriminator(nn.Module):
     def __init__(self):
         super(Discriminator, self).__init__()
 
-    
+
         self.layer1 = torch.nn.Sequential(
             torch.nn.Conv3d(1, 32, kernel_size=4, stride=2),
             torch.nn.LeakyReLU(.2)
@@ -94,8 +94,8 @@ class Discriminator(nn.Module):
         )
         self.layer5 = nn.Linear(256,1)
 
-    
-        
+
+
 
 
     def forward(self, x):

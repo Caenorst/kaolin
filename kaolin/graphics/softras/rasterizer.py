@@ -1,9 +1,9 @@
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -31,8 +31,8 @@ import soft_renderer.functional as srf
 
 
 class SoftRasterizer(nn.Module):
-    def __init__(self, image_size=256, background_color=[0, 0, 0], near=1, far=100, 
-                 anti_aliasing=False, fill_back=False, eps=1e-3, 
+    def __init__(self, image_size=256, background_color=[0, 0, 0], near=1, far=100,
+                 anti_aliasing=False, fill_back=False, eps=1e-3,
                  sigma_val=1e-5, dist_func='euclidean', dist_eps=1e-4,
                  gamma_val=1e-4, aggr_func_rgb='softmax', aggr_func_alpha='prod',
                  texture_type='surface'):
@@ -65,8 +65,8 @@ class SoftRasterizer(nn.Module):
     def forward(self, mesh, mode=None):
         image_size = self.image_size * (2 if self.anti_aliasing else 1)
 
-        images = srf.soft_rasterize(mesh.face_vertices, mesh.face_textures, image_size, 
-                                    self.background_color, self.near, self.far, 
+        images = srf.soft_rasterize(mesh.face_vertices, mesh.face_textures, image_size,
+                                    self.background_color, self.near, self.far,
                                     self.fill_back, self.eps,
                                     self.sigma_val, self.dist_func, self.dist_eps,
                                     self.gamma_val, self.aggr_func_rgb, self.aggr_func_alpha,

@@ -21,7 +21,7 @@ import kaolin as kal
 from kaolin.rep import TriangleMesh
 
 
-def test_pointcloud_to_voxelgrid(device='cpu'): 
+def test_pointcloud_to_voxelgrid(device='cpu'):
     mesh = TriangleMesh.from_obj('tests/model.obj')
     if device == 'cuda':
         mesh.cuda()
@@ -44,4 +44,4 @@ def test_pointcloud_to_sdf(device='cpu'):
     if device == 'cuda':
         mesh.cuda()
     pts, _ = kal.conversions.trianglemesh_to_pointcloud(mesh, 1000)
-    sdf_ = kal.conversions.pointcloud_to_trianglemesh(pts)    
+    sdf_ = kal.conversions.pointcloud_to_trianglemesh(pts)

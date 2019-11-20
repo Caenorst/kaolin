@@ -21,18 +21,18 @@ import kaolin as kal
 
 
 def test_sdf_to_pointcloud():
-    
+
     sdf = kal.rep.SDF.sphere()
     points = kal.conversions.sdf_to_pointcloud(sdf, bbox_center=0.,
         resolution=10, bbox_dim=1,  num_points = 10000)
-    
+
     assert (set(points.shape) == set([10000, 3]))
     assert kal.rep.SDF._length(points).mean() <=.6
     assert kal.rep.SDF._length(points).mean() >=.4
 
     points = kal.conversions.sdf_to_pointcloud(sdf, bbox_center=0.,
         resolution=32, bbox_dim=1,  num_points = 10000)
-    
+
     assert (set(points.shape) == set([10000, 3]))
     assert kal.rep.SDF._length(points).mean() <=.55
     assert kal.rep.SDF._length(points).mean() >=.45
@@ -40,7 +40,7 @@ def test_sdf_to_pointcloud():
     sdf = kal.rep.SDF.box(h =.2, w = .4, l = .5)
     points = kal.conversions.sdf_to_pointcloud(sdf, bbox_center=0.,
         resolution=10, bbox_dim=1,  num_points = 10000)
-    
+
     assert (torch.abs(points[:,0])>.22).sum() == 0
     assert (torch.abs(points[:,1])>.44).sum() == 0
     assert (torch.abs(points[:,2])>.55).sum() == 0
@@ -57,14 +57,14 @@ def test_sdf_to_trianglemesh():
 
     verts, faces = kal.conversions.sdf_to_trianglemesh(sdf, bbox_center=0.,
         resolution=32, bbox_dim=1)
-    
+
     assert kal.rep.SDF._length(verts).mean() <=.55
     assert kal.rep.SDF._length(verts).mean() >=.45
 
     sdf = kal.rep.SDF.box(h =.2, w = .4, l = .5)
     verts, faces = kal.conversions.sdf_to_trianglemesh(sdf, bbox_center=0.,
         resolution=10, bbox_dim=1)
-    
+
     assert (torch.abs(verts[:,0])>.22).sum() == 0
     assert (torch.abs(verts[:,1])>.44).sum() == 0
     assert (torch.abs(verts[:,2])>.55).sum() == 0

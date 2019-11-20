@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch 
+import torch
 from torchvision import transforms
-from torchvision.transforms import Normalize as norm 
+from torchvision.transforms import Normalize as norm
 
 import kaolin as kal
 
@@ -26,8 +26,8 @@ preprocess = transforms.Compose([
 ])
 
 
-def loss_lap(mesh1, deltas ): 
+def loss_lap(mesh1, deltas ):
     mesh2 = kal.rep.TriangleMesh.from_tensors(mesh1.vertices - deltas, mesh1.faces)
     loss =   kal.metrics.mesh.laplacian_loss(mesh1, mesh2)
-    loss += torch.sum((deltas)**2, 1).mean() * .0666 
-    return loss 
+    loss += torch.sum((deltas)**2, 1).mean() * .0666
+    return loss

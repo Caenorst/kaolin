@@ -23,12 +23,12 @@ class EncoderDecoder(nn.Module):
         self.deconv4 = nn.ConvTranspose3d(16, 8, 3, stride = 2 ,padding=0)
         self.deconv5 = nn.ConvTranspose3d(8, 1, 3,stride = 2, padding=0)
 
-    
-        
+
+
 
 
     def forward(self, x):
-        
+
 
         # Encoder
         x = (F.relu(self.bn1(self.conv1(x))))
@@ -36,16 +36,16 @@ class EncoderDecoder(nn.Module):
         # Decoder
         x = F.relu(self.bn3(self.deconv3(x)))
         x = F.relu(self.deconv4(x))
-    
+
         return F.sigmoid((self.deconv5(x)))[:,0, :30,:30,:30]
 
 
 
 class EncoderDecoderForNLL(nn.Module):
-    """A simple encoder-decoder style voxel superresolution network, intended for 
-    use with the NLL loss. (The major change here is in the shape of each voxel 
-    grid batch. It is now B x 2 x N x N x N, where B is the batchsize, 2 denotes the 
-    occupancy classes (occupied vs unoccupied), and N is the number of voxels along 
+    """A simple encoder-decoder style voxel superresolution network, intended for
+    use with the NLL loss. (The major change here is in the shape of each voxel
+    grid batch. It is now B x 2 x N x N x N, where B is the batchsize, 2 denotes the
+    occupancy classes (occupied vs unoccupied), and N is the number of voxels along
     each dimension.)
     """
 
@@ -61,12 +61,12 @@ class EncoderDecoderForNLL(nn.Module):
         self.deconv4 = nn.ConvTranspose3d(16, 8, 3, stride = 2 ,padding=0)
         self.deconv5 = nn.ConvTranspose3d(8, 2, 3,stride = 2, padding=0)
 
-    
+
         self.log_softmax = nn.LogSoftmax(dim=1)
 
 
     def forward(self, x):
-        
+
 
         # Encoder
         x = (F.relu(self.bn1(self.conv1(x))))
@@ -74,7 +74,7 @@ class EncoderDecoderForNLL(nn.Module):
         # Decoder
         x = F.relu(self.bn3(self.deconv3(x)))
         x = F.relu(self.deconv4(x))
-    
+
         return torch.exp(self.log_softmax(self.deconv5(x)))[:,:, :30,:30,:30]
 
 

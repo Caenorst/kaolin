@@ -26,7 +26,7 @@ def test_to_trianglemesh_to_pointcloud(device):
     mesh = TriangleMesh.from_obj('tests/model.obj')
     if device == 'cuda':
         mesh.cuda()
-    
+
     points, _ = kal.conversions.trianglemesh_to_pointcloud(mesh, 10)
     assert (set(points.shape) == set([10, 3]))
     points, _ = kal.conversions.trianglemesh_to_pointcloud(mesh, 10000)

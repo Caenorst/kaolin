@@ -377,9 +377,9 @@ def max_connected(voxel: Union[torch.Tensor, VoxelGrid], thresh: float = .5):
         torch.Torch: updated voxel array
 
     Example:
-        >>> voxel = torch.rand 
+        >>> voxel = torch.rand
     """
-    
+
     voxel = voxel.clone()
     voxel = threshold(voxel, thresh)
     max_component = np.zeros(voxel.shape, dtype=bool)
@@ -406,7 +406,7 @@ def max_connected(voxel: Union[torch.Tensor, VoxelGrid], thresh: float = .5):
                                     stack.append([i,j,k])
                 if component.sum() > max_component.sum():
                     max_component = component
-    
+
     return torch.FloatTensor(max_component).to(voxel.device)
 
 
@@ -415,7 +415,7 @@ def _voxel_exist(voxels, x,y,z):
         or y >= voxels.shape[1] or z >= voxels.shape[2]:
         return False
     else :
-        return voxels[x,y,z] == 1 
+        return voxels[x,y,z] == 1
 
 
 if __name__ == '__main__':

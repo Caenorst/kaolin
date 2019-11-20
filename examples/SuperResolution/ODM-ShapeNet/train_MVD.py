@@ -15,7 +15,7 @@ import torch.nn.functional as F
 from architectures import upscale
 from dataloaders import ShapeNet_ODMS
 from utils import down_sample, up_sample, upsample_omd, to_occpumancy_map
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -51,7 +51,7 @@ dataloader_val = DataLoader(valid_set, batch_size=args.batchsize, shuffle=False,
 
 
 """
-Model settings 
+Model settings
 """
 model = upscale(128, 32 ).to(args.device)
 
@@ -69,7 +69,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 
 
@@ -81,7 +81,7 @@ class Engine_Residual(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -93,27 +93,27 @@ class Engine_Residual(object):
     def train(self):
         loss_epoch = 0.
         num_batches = 0
-        diff = 0 
+        diff = 0
         model.train()
         # Train loop
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optimizer.zero_grad()
-            
+
             # data creation
-            
-            
+
+
 
             tgt_odms = data['odms_128'].to(args.device)
             inp_odms = data['odms_32'].to(args.device)
-            
-            # inference 
+
+            # inference
             initial_odms = upsample_omd(inp_odms)*4
             distance = 128 - initial_odms
             pred_odms_update = model(inp_odms)
             pred_odms_update = pred_odms_update * distance
             pred_odms = initial_odms + pred_odms_update
 
-            # losses 
+            # losses
             loss = loss_fn(pred_odms, tgt_odms)
             loss.backward()
             loss_epoch += float(loss.item())
@@ -122,19 +122,19 @@ class Engine_Residual(object):
             num_batches += 1
             if i % args.print_every == 0:
                 tqdm.write(f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}: Loss: {float(loss.item())}')
-                
+
             optimizer.step()
-        
-        
+
+
         loss_epoch = loss_epoch / num_batches
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
+
+
     def validate(self):
         model.eval()
-        with torch.no_grad():   
+        with torch.no_grad():
             iou_epoch = 0.
             iou_NN_epoch = 0.
             num_batches = 0
@@ -148,19 +148,19 @@ class Engine_Residual(object):
                 tgt_voxels = data['voxels_128'].to(args.device)
                 inp_odms = data['odms_32'].to(args.device)
                 inp_voxels = data['voxels_32'].to(args.device)
-                
-                # inference 
+
+                # inference
                 initial_odms = upsample_omd(inp_odms)*4
                 distance = 128 - initial_odms
                 pred_odms_update = model(inp_odms)
                 pred_odms_update = pred_odms_update * distance
                 pred_odms = initial_odms + pred_odms_update
-                
-                # losses 
+
+                # losses
                 loss = loss_fn(pred_odms, tgt_odms)
                 loss_epoch += float(loss.item())
 
-                
+
                 NN_pred = up_sample(inp_voxels)
                 iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt_voxels)
                 iou_NN_epoch += iou_NN
@@ -168,7 +168,7 @@ class Engine_Residual(object):
 
                 pred_voxels = []
                 pred_odms = pred_odms.int()
-                for odms, voxel_NN in zip(pred_odms,NN_pred): 
+                for odms, voxel_NN in zip(pred_odms,NN_pred):
                     pred_voxels.append(kal.rep.voxel.project_odms(odms,voxel_NN , votes = 2).unsqueeze(0))
                 pred_voxels = torch.cat(pred_voxels)
                 iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
@@ -180,7 +180,7 @@ class Engine_Residual(object):
                         out_iou = iou_epoch.item() / float(num_batches)
                         out_iou_NN = iou_NN_epoch.item() / float(num_batches)
                         tqdm.write(f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}: IoU: {out_iou}, Iou Base: {out_iou_NN}')
-                        
+
             out_iou = iou_epoch.item() / float(num_batches)
             out_iou_NN = iou_NN_epoch.item() / float(num_batches)
             tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: IoU: {out_iou}, Iou Base: {out_iou_NN}')
@@ -194,8 +194,8 @@ class Engine_Residual(object):
         if self.val_loss[-1] >= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
-        
+
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -215,7 +215,7 @@ class Engine_Residual(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
             torch.save(model.state_dict(), os.path.join(args.logdir, odm_type + 'best.pth'))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, odm_type + 'best_optim.pth'))
@@ -226,9 +226,9 @@ class Engine_Residual(object):
 
 
 trainer = Engine_Residual()
-for i, epoch in enumerate(range(args.epochs)): 
+for i, epoch in enumerate(range(args.epochs)):
     trainer.train()
-    if i % 4 == 0: 
+    if i % 4 == 0:
         trainer.validate()
         trainer.save()
 
@@ -243,7 +243,7 @@ class Engine_Occ(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -255,25 +255,25 @@ class Engine_Occ(object):
     def train(self):
         loss_epoch = 0.
         num_batches = 0
-        diff = 0 
+        diff = 0
 
         # Train loop
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optimizer.zero_grad()
-            
+
             # data creation
             tgt_odms = data['odms_128'].to(args.device)
             inp_odms = data['odms_32'].to(args.device)
             tgt_odms_occ = to_occpumancy_map(tgt_odms)
-            
+
             diff += tgt_odms_occ.mean()
-            
-            # inference 
+
+            # inference
             pred_odms = model(inp_odms)
 
-            # losses 
+            # losses
             loss = loss_fn(pred_odms, tgt_odms_occ)
-            
+
             loss.backward()
             loss_epoch += float(loss.item())
 
@@ -281,19 +281,19 @@ class Engine_Occ(object):
             num_batches += 1
             if i % args.print_every == 0:
                 tqdm.write(f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}: Loss: {float(loss.item())}')
-                
+
             optimizer.step()
         # print ( diff/ float(num_batches))
-        
+
         loss_epoch = loss_epoch / num_batches
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
+
+
     def validate(self):
         model.eval()
-        with torch.no_grad():   
+        with torch.no_grad():
             iou_epoch = 0.
             iou_NN_epoch = 0.
             num_batches = 0
@@ -308,11 +308,11 @@ class Engine_Occ(object):
                 inp_odms = data['odms_32'].to(args.device)
                 inp_voxels = data['voxels_32'].to(args.device)
                 tgt_odms_occ = to_occpumancy_map(tgt_odms)
-                
-                # inference 
+
+                # inference
                 pred_odms = model(inp_odms)
 
-                # losses 
+                # losses
                 loss = loss_fn(pred_odms, tgt_odms_occ)
 
                 loss_epoch += float(loss.item())
@@ -320,8 +320,8 @@ class Engine_Occ(object):
                 ones = pred_odms > .3
                 zeros = pred_odms <= .7
                 pred_odms[ones] =  pred_odms.shape[-1]
-                pred_odms[zeros] = 0 
-                
+                pred_odms[zeros] = 0
+
 
                 NN_pred = up_sample(inp_voxels)
                 iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt_voxels)
@@ -329,21 +329,21 @@ class Engine_Occ(object):
 
 
                 pred_voxels = []
-                for odms, voxel_NN in zip(pred_odms,NN_pred): 
+                for odms, voxel_NN in zip(pred_odms,NN_pred):
                     pred_voxels.append(kal.rep.voxel.project_odms(odms, voxel_NN, votes = 2).unsqueeze(0))
                 pred_voxels = torch.cat(pred_voxels)
                 iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
                 iou_epoch += iou
-                
 
-                
+
+
                 # logging
                 num_batches += 1
                 if i % args.print_every == 0:
                         out_iou = iou_epoch.item() / float(num_batches)
                         out_iou_NN = iou_NN_epoch.item() / float(num_batches)
                         tqdm.write(f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}: IoU: {out_iou}, Iou Base: {out_iou_NN}')
-                        
+
             out_iou = iou_epoch.item() / float(num_batches)
             out_iou_NN = iou_NN_epoch.item() / float(num_batches)
             tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: IoU: {out_iou}, Iou Base: {out_iou_NN}')
@@ -357,7 +357,7 @@ class Engine_Occ(object):
         if self.val_loss[-1] >= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -376,7 +376,7 @@ class Engine_Occ(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
             torch.save(model.state_dict(), os.path.join(args.logdir, odm_type + 'best.pth'))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, odm_type + 'best_optim.pth'))
@@ -388,8 +388,8 @@ class Engine_Occ(object):
 
 
 trainer = Engine_Occ()
-for i, epoch in enumerate(range(args.epochs)): 
+for i, epoch in enumerate(range(args.epochs)):
     trainer.train()
-    if i % 4 == 0: 
+    if i % 4 == 0:
         trainer.validate()
         trainer.save()

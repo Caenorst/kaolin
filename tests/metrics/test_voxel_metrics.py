@@ -20,28 +20,28 @@ import sys
 import kaolin as kal
 from kaolin.metrics.voxel import iou
 
-def test_iou(device = 'cpu'):   
-    
-    
+def test_iou(device = 'cpu'):
+
+
     A = torch.rand(2,32,32,32).to(device)
     B = torch.ones(2,32,32,32).to(device)
-    distance = iou(A,B)  
+    distance = iou(A,B)
     assert (distance >=0 and distance <=1.)
 
     A = torch.ones(2,32,32,32).to(device)
-    distance = iou(A,B)  
+    distance = iou(A,B)
     assert (distance==1)
 
 
     A = torch.zeros(2,32,32,32).to(device)
     B = torch.ones(2,32,32,32).to(device)
-    distance = iou(A,B)  
+    distance = iou(A,B)
     assert (distance ==0)
 
     A = torch.zeros(2,32,32,32).to(device)
     B = torch.zeros(2,32,32,32).to(device)
-    distance = iou(A,B)  
+    distance = iou(A,B)
     assert (distance != distance) # should be NaN
 
-def test_iou_gpu(): 
+def test_iou_gpu():
     test_iou("cuda")

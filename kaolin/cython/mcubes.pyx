@@ -3,7 +3,7 @@
 
 # Permission is hereby granted, free of charge,
 # to any person obtaining a copy of this software and
-# associated documentation files (the "Software"), to 
+# associated documentation files (the "Software"), to
 #  in the Software without restriction, including without
 #  limitation the rights to use, copy, modify, merge, publish,
 #  distribute, sublicense, and/or sell copies of the Software,
@@ -43,7 +43,7 @@ cdef extern from "pywrapper.h":
     cdef object c_marching_cubes_func "marching_cubes_func"(tuple, tuple, int, int, int, object, double) except +
 
 def marching_cubes(np.ndarray volume, float isovalue):
-    
+
     verts, faces = c_marching_cubes(volume, isovalue)
     verts.shape = (-1, 3)
     faces.shape = (-1, 3)
@@ -64,7 +64,7 @@ def marching_cubes3(np.ndarray volume, float isovalue):
     return verts, faces
 
 def marching_cubes_func(tuple lower, tuple upper, int numx, int numy, int numz, object f, double isovalue):
-    
+
     verts, faces = c_marching_cubes_func(lower, upper, numx, numy, numz, f, isovalue)
     verts.shape = (-1, 3)
     faces.shape = (-1, 3)

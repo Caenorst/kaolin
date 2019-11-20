@@ -32,12 +32,12 @@ np.import_array()
 
 def nnsearch (A, B):
     closest = np.zeros(A.shape[0])
-    cdef float min_val 
-    for i, a in enumerate(A): 
-        min_val = ((a-B[0])**2).sum() 
-        for j, b in enumerate(B): 
+    cdef float min_val
+    for i, a in enumerate(A):
+        min_val = ((a-B[0])**2).sum()
+        for j, b in enumerate(B):
             dist = ((a-b)**2).sum()
-            if dist <= min_val: 
+            if dist <= min_val:
                 closest[i] = j
                 min_val = dist
     return closest

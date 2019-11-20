@@ -62,7 +62,7 @@ class ScanNet(data.Dataset):
         # Get test data and labels filepaths
         self.data, self.depth, self.labels = get_filenames_scannet(
             self.root_dir, self.scene_id)
-        self.length += len(self.data)        
+        self.length += len(self.data)
 
     def __getitem__(self, index):
         """ Returns element at index in the dataset.
@@ -387,7 +387,7 @@ class ScanNet(data.Dataset):
             for each class.
 
         """
-        
+
         label_image = np.zeros((output.shape[0], output.shape[1], 3),
                                dtype=np.uint8)
         for idx, color in enumerate(color_palette):

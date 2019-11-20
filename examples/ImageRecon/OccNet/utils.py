@@ -12,13 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch 
+import torch
 from torchvision import transforms
 from PIL import Image
 import numpy as np
 import kaolin as kal
 import trimesh
-import time 
+import time
 from kaolin import mcubes
 
 
@@ -50,24 +50,24 @@ def occ_function(model,code):
 
     def eval_query(query):
         pred_occ = model.decode(query.unsqueeze(0), z, code.unsqueeze(0) ).logits[0]
-         # values less then .2 are sent to 1 and above(occupied ) are set to 0 -> part fo surface 
+         # values less then .2 are sent to 1 and above(occupied ) are set to 0 -> part fo surface
         values = pred_occ < .2
-        
+
 
         return values
 
-        
-    return eval_query 
+
+    return eval_query
 
 
-def collate_fn(data): 
+def collate_fn(data):
     new_data = {}
     for k in data[0].keys():
-        
+
         if k in ['occ_points','occ_values', 'imgs', 'points']:
             new_info = tuple(d[k] for d in data)
             new_info = torch.stack(new_info, 0)
-        else: 
+        else:
             new_info = tuple(d[k] for d in data)
 
         new_data[k] = new_info
@@ -75,7 +75,7 @@ def collate_fn(data):
 
 
 def extract_mesh(occ_hat, model, c=None, stats_dict=dict()):
-    
+
     n_x, n_y, n_z = occ_hat.shape
     box_size = 1 + .05
     threshold = .2

@@ -16,7 +16,7 @@
 Example 1. Drawing a teapot from multiple viewpoints.
 """
 import os
-import math 
+import math
 
 import torch
 import numpy as np
@@ -26,10 +26,10 @@ from PIL import Image
 
 import neural_renderer as nr
 import soft_renderer as sr
-import graphics 
+import graphics
 from graphics.render.base import Render as Dib_Renderer
 import kaolin as kal
-from kaolin.rep import TriangleMesh 
+from kaolin.rep import TriangleMesh
 from graphics.utils.utils_sphericalcoord import get_spherical_coords_x
 from graphics.utils.utils_perspective import lookatnp, perspectiveprojectionnp
 
@@ -62,24 +62,24 @@ os.makedirs(output_directory_dib, exist_ok=True)
 def main():
     filename_input = os.path.join(data_dir, 'banana.obj')
     filename_output = os.path.join(output_directory, 'example1.gif')
-    
+
     ###########################
     # camera settings
     ###########################
     camera_distance = 2
     elevation = 30
-    
+
     ###########################
     # load object
     ###########################
     mesh = TriangleMesh.from_obj(filename_input)
     vertices = mesh.vertices
     faces = mesh.faces.int()
-    uvs = torch.FloatTensor(get_spherical_coords_x(vertices.data.numpy())) 
+    uvs = torch.FloatTensor(get_spherical_coords_x(vertices.data.numpy()))
     face_textures = (faces).clone()
-    
-    vertices = vertices[None, :, :].cuda()  
-    faces = faces[None, :, :].cuda() 
+
+    vertices = vertices[None, :, :].cuda()
+    faces = faces[None, :, :].cuda()
     uvs = uvs[None, :, :].cuda()
     face_textures[None, :, :].cuda()
 
@@ -90,12 +90,12 @@ def main():
     vertices_min = vertices.min()
     vertices_middle = (vertices_max + vertices_min)/2.
     vertices = vertices - vertices_middle
-    
+
     coef = 5
     vertices = vertices * coef
 
     ###########################
-    # NMR 
+    # NMR
     ###########################
     textures = torch.ones(1, faces.shape[1], 2, 2, 2, 3, dtype=torch.float32).cuda()
     renderer = nr.Renderer(camera_mode='look_at')
@@ -104,16 +104,16 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_nmr, 'rotation.gif'), mode='I')
     for num, azimuth in enumerate(loop):
         renderer.eye =  nr.get_points_from_angles(camera_distance, elevation, azimuth)
-        images, _, _ = renderer(vertices, faces, textures)  
-        image = images.detach().cpu().numpy()[0].transpose((1, 2, 0)) 
+        images, _, _ = renderer(vertices, faces, textures)
+        image = images.detach().cpu().numpy()[0].transpose((1, 2, 0))
         writer.append_data((255*image).astype(np.uint8))
     writer.close()
 
 
-    
+
 
     ###########################
-    # Soft Rasterizer 
+    # Soft Rasterizer
     ###########################
     textures = torch.ones(1, faces.shape[1], 2, 3, dtype=torch.float32).cuda()
     mesh = sr.Mesh(vertices, faces, textures)
@@ -133,7 +133,7 @@ def main():
 
     ################################
     # Dib-Renderer - Vertex Colours
-    ################################ 
+    ################################
     renderer = Dib_Renderer(256, 256, mode = 'VertexColor')
     textures = torch.ones(1, vertices.shape[1], 3).cuda()
     loop = tqdm.tqdm(list(range(0, 360, 4)))
@@ -145,13 +145,13 @@ def main():
         image = predictions.detach().cpu().numpy()[0]
         writer.append_data((image*255).astype(np.uint8))
     writer.close()
- 
+
 
 
 
     ################################
     # Dib-Renderer - Lambertian
-    ################################  
+    ################################
     renderer = Dib_Renderer(256, 256, mode = 'Lambertian')
     textures = torch.ones(1, 3, 256, 256).cuda()
     loop = tqdm.tqdm(list(range(0, 360, 4)))
@@ -173,19 +173,19 @@ def main():
     textures = torch.ones(1, 3, 256, 256).cuda()
 
     ### Lighting info ###
-    material = np.array([[0.1, 0.1, 0.1], 
+    material = np.array([[0.1, 0.1, 0.1],
                          [1.0, 1.0, 1.0],
                          [0.4, 0.4, 0.4]], dtype=np.float32).reshape(-1, 3, 3)
     material = torch.from_numpy(material).repeat(1, 1, 1).cuda()
-    
+
     shininess = np.array([100], dtype=np.float32).reshape(-1, 1)
     shininess = torch.from_numpy(shininess).repeat(1, 1).cuda()
 
     lightdirect = 2 * np.random.rand(1, 3).astype(np.float32) - 1
     lightdirect[:, 2] += 2
     lightdirect = torch.from_numpy(lightdirect).cuda()
-    
-   
+
+
     loop = tqdm.tqdm(list(range(0, 360, 4)))
     loop.set_description('Drawing Dib_Renderer Phong')
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'rotation_Phong.gif'), mode='I')
@@ -199,20 +199,20 @@ def main():
         image = predictions.detach().cpu().numpy()[0]
         writer.append_data((image*255).astype(np.uint8))
     writer.close()
- 
-   
+
+
     ################################
     # Dib-Renderer - SH
     ################################
     renderer = Dib_Renderer(256, 256, mode = 'SphericalHarmonics')
     textures = torch.ones(1, 3, 256, 256).cuda()
-    
+
     ### Lighting info ###
     lightparam = np.random.rand(1, 9).astype(np.float32)
     lightparam[:, 0] += 2
     lightparam = torch.from_numpy(lightparam).cuda()
-    
-   
+
+
     loop = tqdm.tqdm(list(range(0, 360, 4)))
     loop.set_description('Drawing Dib_Renderer SH')
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'rotation_SH.gif'), mode='I')
@@ -225,7 +225,7 @@ def main():
         writer.append_data((image*255).astype(np.uint8))
     writer.close()
 
-  
+
 
 
 

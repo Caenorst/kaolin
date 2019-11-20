@@ -103,7 +103,7 @@ class RasterizeFunction(Function):
                                                            depth_map, rgb_map,
                                                            sampling_index_map,
                                                            sampling_weight_map)
-                
+
         rgb_map = RasterizeFunction.forward_background(ctx, face_index_map, rgb_map)
         alpha_map = RasterizeFunction.forward_alpha_map(ctx, alpha_map, face_index_map)
 
@@ -137,7 +137,7 @@ class RasterizeFunction(Function):
             grad_textures = torch.zeros_like(textures, dtype=torch.float32)
         else:
             grad_textures = torch.cuda.FloatTensor(1).fill_(0.0)
-        
+
         # get grad_outputs
         if ctx.return_rgb:
             if grad_rgb_map is not None:
@@ -180,7 +180,7 @@ class RasterizeFunction(Function):
         return grad_faces, grad_textures, None, None, None, None, None, None, None, None
 
     @staticmethod
-    def forward_face_index_map(ctx, faces, face_index_map, weight_map, 
+    def forward_face_index_map(ctx, faces, face_index_map, weight_map,
                                depth_map, face_inv_map):
         faces_inv = torch.zeros_like(faces)
         return rasterize_cuda.forward_face_index_map(faces, face_index_map, weight_map,

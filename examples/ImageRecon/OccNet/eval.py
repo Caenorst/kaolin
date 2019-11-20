@@ -26,7 +26,7 @@ from tqdm import tqdm
 from utils import occ_function, collate_fn, extract_mesh
 from architectures import OccupancyNetwork
 from PIL import Image
-import kaolin as kal 
+import kaolin as kal
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-expid', type=str, default='Direct', help='Unique experiment identifier.')
@@ -72,7 +72,7 @@ num_items = 0
 
 with torch.no_grad():
     model.encoder.eval()
-    model.decoder.eval() 
+    model.decoder.eval()
     for data in tqdm(dataloader_val):
         imgs = data['imgs'][:,:3].to(args.device)
         sdf_points = data['occ_points'].to(args.device)
@@ -80,19 +80,19 @@ with torch.no_grad():
         gt_occ = data['occ_values'].to(args.device)
 
 
-        
+
         encoding = model.encode_inputs(imgs)
         pred_occ = model.decode(sdf_points, torch.zeros(args.batch_size, 0), encoding ).logits
 
-        i = 0 
+        i = 0
         for sdf_point, gt_oc, pred_oc, gt_surf, code in zip(sdf_points, gt_occ, pred_occ, surface_points, encoding):
             #### compute iou ####
             iou_epoch += float((kal.metrics.point.iou(gt_oc, pred_oc, thresh=.2) / \
                 float(gt_occ.shape[0])).item())
-            
+
             if args.f_score or args.vis:
-                
-                # extract mesh from sdf 
+
+                # extract mesh from sdf
                 sdf = kal.rep.SDF(occ_function(model, code))
                 voxelization = kal.conversion.SDF.to_voxel(sdf)
                 verts, faces = extract_mesh( voxelization, model)\
@@ -101,9 +101,9 @@ with torch.no_grad():
                 verts = kal.rep.point.re_align(occ_points, verts.clone())
                 mesh = kal.rep.TriangleMesh.from_tensors(verts, faces)
                 if verts.shape[0] == 0: # if mesh is empty count as 0 f-score
-                    continue 
+                    continue
 
-                if args.vis: 
+                if args.vis:
 
                     tgt_verts = data['verts'][i]
                     tgt_faces = data['faces'][i]
@@ -121,26 +121,26 @@ with torch.no_grad():
                     num_items += 1
 
                 if args.f_score:
-                    #### compute f score #### 
+                    #### compute f score ####
                     pred_surf,_ = mesh.sample(5000)
                     f_score = kal.metrics.point.f_score(gt_surf, pred_surf, extend = False)
                     f_epoch += (f_score  / float(gt_occ.shape[0])).item()
-            i+= 1       
+            i+= 1
 
-        
+
         num_batches += 1.
 
 out_iou = iou_epoch / float(num_batches)
 print ('IoU over validation set is {0}'.format(out_iou))
-if args.f_score: 
+if args.f_score:
     out_f = f_epoch / float(num_batches)
     print ('F-score over validation set is {0}'.format(out_f))
 
 
 
- 
 
 
-    
 
-    
+
+
+

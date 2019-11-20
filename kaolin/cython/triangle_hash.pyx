@@ -3,7 +3,7 @@
 
 # Permission is hereby granted, free of charge,
 # to any person obtaining a copy of this software and
-# associated documentation files (the "Software"), to 
+# associated documentation files (the "Software"), to
 #  in the Software without restriction, including without
 #  limitation the rights to use, copy, modify, merge, publish,
 #  distribute, sublicense, and/or sell copies of the Software,
@@ -46,7 +46,7 @@ cdef class TriangleHash:
         cdef int n_tri = triangles.shape[0]
         cdef int bbox_min[2]
         cdef int bbox_max[2]
-        
+
         cdef int i_tri, j, x, y
         cdef int spatial_idx
 
@@ -104,5 +104,5 @@ cdef class TriangleHash:
 
         for k in range(tri_indices.size()):
             tri_indices_view[k] = tri_indices[k]
-            
+
         return points_indices_np, tri_indices_np

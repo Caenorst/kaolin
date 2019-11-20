@@ -49,7 +49,7 @@ class DirectionalLighting(nn.Module):
 
     def forward(self, light, normals):
         return srf.directional_lighting(light, normals,
-                                        self.light_intensity, self.light_color, 
+                                        self.light_intensity, self.light_color,
                                         self.light_direction)
 
 

@@ -30,8 +30,8 @@ __device__
 __device__
 	float3 cross(float3 a, float3 b)
 {
-  return make_float3(a.y*b.z - a.z*b.y, 
-  					a.z*b.x - a.x*b.z, 
+  return make_float3(a.y*b.z - a.z*b.y,
+  					a.z*b.x - a.x*b.z,
   					a.x*b.y - a.y*b.x
   					);
   	
@@ -68,14 +68,14 @@ __device__
 {
 	float3 v = cross(b-a, c-a);
 	return  sign(dot(v, d-a));
- 
+
 }
 
 
 
 
 
-__global__ 
+__global__
 void MeshIntersectionKernel(
 	int b,
 	int n,
@@ -100,7 +100,7 @@ void MeshIntersectionKernel(
 			buf_3[j]=verts_3[k2*3+j];
 		}
 		__syncthreads();
-		for (int j=threadIdx.x+blockIdx.y*blockDim.x;j<n;j+=blockDim.x*gridDim.y){ // for points in a batch 
+		for (int j=threadIdx.x+blockIdx.y*blockDim.x;j<n;j+=blockDim.x*gridDim.y){ // for points in a batch
 			
 			float3 q1 = make_float3(points[ j *3+0], points[ j *3+1], points[ j *3+2]);
 			float3 q2 = make_float3(points[ j *3+0] + 10., points[ j *3+1], points[ j *3+2]);
@@ -118,9 +118,9 @@ void MeshIntersectionKernel(
 					if( cond_1 != cond_2 ){
 						int cond_3 = signed_volume(q1, q2, p1, p2);
 						int cond_4 = signed_volume(q1, q2, p2, p3);
-						if (cond_3 == cond_4){ 
+						if (cond_3 == cond_4){
 							int cond_5 = signed_volume(q1, q2, p3, p1);
-							if ( cond_5 == cond_3){ 
+							if ( cond_5 == cond_3){
 								atomicAdd(&result[j], 1./32.);
 								
 								

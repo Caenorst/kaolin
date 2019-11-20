@@ -1,9 +1,9 @@
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -59,13 +59,13 @@ class LaplacianLoss(nn.Module):
             return x.sum() / batch_size
         else:
             return x
-        
+
 class FlattenLoss(nn.Module):
     def __init__(self, faces, average=False):
         super(FlattenLoss, self).__init__()
         self.nf = faces.size(0)
         self.average = average
-        
+
         faces = faces.detach().cpu().numpy()
         vertices = list(set([tuple(v) for v in np.sort(np.concatenate((faces[:, 0:2], faces[:, 1:3]), axis=0))]))
 

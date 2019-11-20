@@ -724,7 +724,7 @@ class Mesh():
         a homogeneous mesh, i.e., each face has the same number of vertices.
 
         """
-        
+
         device = vertices.device
 
         facesize = faces.shape[1]

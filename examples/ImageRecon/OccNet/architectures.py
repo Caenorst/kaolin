@@ -14,8 +14,8 @@
 
 import math
 
-import torch 
-from torch import nn 
+import torch
+from torch import nn
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 from torchvision import models
@@ -195,7 +195,7 @@ class CResnetBlockConv1d(nn.Module):
         size_out (int): output dimension
         size_h (int): hidden dimension
         norm_method (str): normalization method
-        legacy (bool): whether to use legacy blocks 
+        legacy (bool): whether to use legacy blocks
     '''
 
     def __init__(self, c_dim, size_in, size_h=None, size_out=None,
@@ -301,7 +301,7 @@ class OccupancyNetwork(nn.Module):
             input (tensor): the input
         '''
         c = self.encoder(inputs)
-       
+
 
         return c
 
@@ -324,7 +324,7 @@ class OccupancyNetwork(nn.Module):
             occ (tensor): occupancy values for occ
             c (tensor): latent conditioned code c
         '''
-        
+
         batch_size = p.size(0)
         mean_z = torch.empty(batch_size, 0).to(self.device)
         logstd_z = torch.empty(batch_size, 0).to(self.device)
@@ -347,4 +347,3 @@ class OccupancyNetwork(nn.Module):
 
         return z
 
-    

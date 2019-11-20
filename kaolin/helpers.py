@@ -75,7 +75,7 @@ def _assert_tensor(inp):
 
 def _assert_dim_gt(inp, tgt):
     """Asserts that the number of dims in inp is greater than the
-    value sepecified in tgt. 
+    value sepecified in tgt.
 
     Args:
         inp (torch.Tensor): Input tensor, whose number of dimensions is
@@ -89,7 +89,7 @@ def _assert_dim_gt(inp, tgt):
 
 def _assert_dim_lt(inp, tgt):
     """Asserts that the number of dims in inp is less than the
-    value sepecified in tgt. 
+    value sepecified in tgt.
 
     Args:
         inp (torch.Tensor): Input tensor, whose number of dimensions is
@@ -102,7 +102,7 @@ def _assert_dim_lt(inp, tgt):
 
 def _assert_dim_ge(inp, tgt):
     """Asserts that the number of dims in inp is greater than or equal to the
-    value sepecified in tgt. 
+    value sepecified in tgt.
 
     Args:
         inp (torch.Tensor): Input tensor, whose number of dimensions is
@@ -116,7 +116,7 @@ def _assert_dim_ge(inp, tgt):
 
 def _assert_dim_le(inp, tgt):
     """Asserts that the number of dims in inp is less than or equal to the
-    value sepecified in tgt. 
+    value sepecified in tgt.
 
     Args:
         inp (torch.Tensor): Input tensor, whose number of dimensions is
@@ -130,7 +130,7 @@ def _assert_dim_le(inp, tgt):
 
 def _assert_dim_eq(inp, tgt):
     """Asserts that the number of dims in inp is exactly equal to the
-    value sepecified in tgt. 
+    value sepecified in tgt.
 
     Args:
         inp (torch.Tensor): Input tensor, whose number of dimensions is

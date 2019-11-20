@@ -44,5 +44,5 @@ if __name__ == '__main__':
         zip_safe=True,
         install_requires=INSTALL_REQUIREMENTS,
         ext_modules=ext_modules,
-        cmdclass = {'build_ext': BuildExtension}   
+        cmdclass = {'build_ext': BuildExtension}
     )

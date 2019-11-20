@@ -29,19 +29,19 @@ int MeshIntersectionKernelLauncher(
 
 
 void mesh_intersection_forward_cuda(
-    const at::Tensor points, 
+    const at::Tensor points,
     const at::Tensor verts_1,
     const at::Tensor verts_2,
     const at::Tensor verts_3,
-    const at::Tensor ints) 
-{   
-    
+    const at::Tensor ints)
+{
+
     MeshIntersectionKernelLauncher(points.data<float>(), verts_1.data<float>(),
                                             verts_2.data<float>(),verts_3.data<float>(),
-                                            points.size(0), points.size(1), 
+                                            points.size(0), points.size(1),
                                             verts_1.size(1),
                                             ints.data<float>());
- 
+
 }
 
 

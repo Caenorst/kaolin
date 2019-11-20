@@ -28,7 +28,7 @@ from utils import setup_meshes, split_meshes, reset_meshes
 from utils import loss_surf, loss_edge, loss_lap , collate_fn
 from architectures import VGG as Encoder, G_Res_Net, MeshEncoder
 
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -62,7 +62,7 @@ if args.latent_loss:
     train_set = kal.datasets.ShapeNet.Combination([points_set, images_set, mesh_set], root='../../datasets/')
     dataloader_train = DataLoader(train_set, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn,
     num_workers=8)
-else: 
+else:
     train_set = kal.datasets.ShapeNet.Combination([points_set, images_set], root='../../datasets/')
 
 
@@ -77,14 +77,14 @@ dataloader_val = DataLoader(valid_set, batch_size=args.batch_size, shuffle=False
 
 
 """
-Model settings 
+Model settings
 """
 meshes = setup_meshes(filename='meshes/386.obj', device=args.device)
 
 
 
 encoders = [Encoder().to(args.device) for i in range(3)]
-mesh_update_kernels = [963, 1091, 1091] 
+mesh_update_kernels = [963, 1091, 1091]
 mesh_updates = [G_Res_Net(mesh_update_kernels[i], hidden = 128, output_features = 3).to(args.device) for i in range(3)]
 if args.latent_loss:
     mesh_encoder = MeshEncoder(30).to(args.device)
@@ -93,8 +93,8 @@ if args.latent_loss:
 parameters = []
 
 
-for i in range(3): 
-    parameters += list(encoders[i].parameters()) 
+for i in range(3):
+    parameters += list(encoders[i].parameters())
     parameters += list(mesh_updates[i].parameters())
 optimizer = optim.Adam(parameters, lr=args.lr)
 
@@ -116,7 +116,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 class Engine(object):
     """Engine that runs training and inference.
@@ -124,7 +124,7 @@ class Engine(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -141,7 +141,7 @@ class Engine(object):
         # Train loop
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optimizer.zero_grad()
-            
+
             ###############################
             ####### data creation #########
             ###############################
@@ -150,7 +150,7 @@ class Engine(object):
             cam_mat = data['cam_mat'].to(args.device)
             cam_pos = data['cam_pos'].to(args.device)
             if (tgt_points.shape[0]!=args.batch_size) and  (inp_images.shape[0]!=args.batch_size)  \
-                and (cam_mat.shape[0]!=args.batch_size) and  (cam_pos.shape[0]!=args.batch_size) : 
+                and (cam_mat.shape[0]!=args.batch_size) and  (cam_pos.shape[0]!=args.batch_size) :
                 continue
             surf_loss, edge_loss, lap_loss, loss, f_loss = 0,0,0,0,0
             ###############################
@@ -159,33 +159,33 @@ class Engine(object):
             img_features = [e(inp_images) for e in encoders]
             for bn in range(args.batch_size):
                 reset_meshes(meshes)
-                ##### layer_1 ##### 
+                ##### layer_1 #####
                 pool_indices = get_pooling_index(meshes['init'][0].vertices, cam_mat[bn], cam_pos[bn], encoding_dims)
                 projected_image_features = pooling(img_features[0], pool_indices, bn)
                 full_vert_features = torch.cat((meshes['init'][0].vertices, projected_image_features), dim = 1)
-                
+
                 delta, future_features = mesh_updates[0](full_vert_features, meshes['adjs'][0])
                 meshes['update'][0].vertices = (meshes['init'][0].vertices + delta.clone())
-                future_features = split_meshes(meshes,future_features, 0)           
+                future_features = split_meshes(meshes,future_features, 0)
 
 
 
-                ##### layer_2 ##### 
+                ##### layer_2 #####
                 pool_indices = get_pooling_index(meshes['init'][1].vertices, cam_mat[bn], cam_pos[bn], encoding_dims)
                 projected_image_features = pooling(img_features[1], pool_indices, bn)
                 full_vert_features = torch.cat((meshes['init'][1].vertices, projected_image_features, future_features), dim = 1)
-                
+
                 delta, future_features = mesh_updates[1](full_vert_features, meshes['adjs'][1])
                 meshes['update'][1].vertices = (meshes['init'][1].vertices + delta.clone())
-                future_features = split_meshes(meshes,future_features, 1)   
+                future_features = split_meshes(meshes,future_features, 1)
 
-                ##### layer_3 ##### 
+                ##### layer_3 #####
                 pool_indices = get_pooling_index(meshes['init'][2].vertices, cam_mat[bn], cam_pos[bn], encoding_dims)
                 projected_image_features = pooling(img_features[2], pool_indices, bn)
                 full_vert_features = torch.cat((meshes['init'][2].vertices, projected_image_features, future_features), dim = 1)
                 delta, future_features = mesh_updates[2](full_vert_features, meshes['adjs'][2])
                 meshes['update'][2].vertices = (meshes['init'][2].vertices + delta.clone())
-                
+
 
                 if args.latent_loss:
                     inds = data['adj_indices'][bn]
@@ -194,8 +194,8 @@ class Engine(object):
                     vert_len = gt_verts.shape[0]
                     gt_adj = torch.sparse.FloatTensor(inds, vals, torch.Size([vert_len,vert_len])).to(args.device)
 
-                    predicted_latent = mesh_encoder(meshes['update'][2].vertices, meshes['adjs'][2])  
-                    gt_latent = mesh_encoder(gt_verts, gt_adj)  
+                    predicted_latent = mesh_encoder(meshes['update'][2].vertices, meshes['adjs'][2])
+                    gt_latent = mesh_encoder(gt_verts, gt_adj)
                     latent_loss = torch.mean(torch.abs(predicted_latent - gt_latent)) * .2
 
 
@@ -209,7 +209,7 @@ class Engine(object):
 
 
                 loss = surf_loss + edge_loss + lap_loss
-                if args.latent_loss: 
+                if args.latent_loss:
                     loss += latent_loss
             loss.backward()
             loss_epoch += float(surf_loss.item())
@@ -220,29 +220,29 @@ class Engine(object):
                 message = f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, Loss: {(surf_loss.item()):4.3f}, '
                 message = message + f'Lap: {(lap_loss.item()):3.3f}, Edge: {(edge_loss.item()):3.3f}'
                 message = message + f' F: {(f_loss.item()):3.3f}'
-                if args.latent_loss: 
+                if args.latent_loss:
                     message = message + f', Lat: {(latent_loss.item()):3.3f}'
                 tqdm.write(message)
 
             optimizer.step()
-        
-        
+
+
         loss_epoch = loss_epoch / num_batches
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
+
+
     def validate(self):
         [e.eval() for e in encoders], [m.eval() for m in mesh_updates]
-        with torch.no_grad():   
+        with torch.no_grad():
             num_batches = 0
             loss_epoch = 0.
-            loss_f = 0 
+            loss_f = 0
             # Validation loop
             for i, data in enumerate(tqdm(dataloader_val), 0):
                 optimizer.zero_grad()
-                
+
                 ###############################
                 ####### data creation #########
                 ###############################
@@ -251,7 +251,7 @@ class Engine(object):
                 cam_mat = data['cam_mat'].to(args.device)
                 cam_pos = data['cam_pos'].to(args.device)
                 if (tgt_points.shape[0]!=args.batch_size) and  (inp_images.shape[0]!=args.batch_size)  \
-                and (cam_mat.shape[0]!=args.batch_size) and  (cam_pos.shape[0]!=args.batch_size) : 
+                and (cam_mat.shape[0]!=args.batch_size) and  (cam_pos.shape[0]!=args.batch_size) :
                     continue
                 surf_loss = 0
                 ###############################
@@ -260,27 +260,27 @@ class Engine(object):
                 img_features = [e(inp_images) for e in encoders]
                 for bn in range(args.batch_size):
                     reset_meshes(meshes)
-                    ##### layer_1 ##### 
+                    ##### layer_1 #####
                     pool_indices = get_pooling_index(meshes['init'][0].vertices, cam_mat[bn], cam_pos[bn], encoding_dims)
                     projected_image_features = pooling(img_features[0], pool_indices, bn)
                     full_vert_features = torch.cat((meshes['init'][0].vertices, projected_image_features), dim = 1)
-                    
+
                     delta, future_features = mesh_updates[0](full_vert_features, meshes['adjs'][0])
                     meshes['update'][0].vertices = (meshes['init'][0].vertices + delta.clone())
-                    future_features = split_meshes(meshes,future_features, 0)           
+                    future_features = split_meshes(meshes,future_features, 0)
 
 
 
-                    ##### layer_2 ##### 
+                    ##### layer_2 #####
                     pool_indices = get_pooling_index(meshes['init'][1].vertices, cam_mat[bn], cam_pos[bn], encoding_dims)
                     projected_image_features = pooling(img_features[1], pool_indices, bn)
                     full_vert_features = torch.cat((meshes['init'][1].vertices, projected_image_features, future_features), dim = 1)
-                    
+
                     delta, future_features = mesh_updates[1](full_vert_features, meshes['adjs'][1])
                     meshes['update'][1].vertices = (meshes['init'][1].vertices + delta.clone())
-                    future_features = split_meshes(meshes,future_features, 1)   
+                    future_features = split_meshes(meshes,future_features, 1)
 
-                    ##### layer_3 ##### 
+                    ##### layer_3 #####
                     pool_indices = get_pooling_index(meshes['init'][2].vertices, cam_mat[bn], cam_pos[bn], encoding_dims)
                     projected_image_features = pooling(img_features[2], pool_indices, bn)
                     full_vert_features = torch.cat((meshes['init'][2].vertices, projected_image_features, future_features), dim = 1)
@@ -303,7 +303,7 @@ class Engine(object):
                     out_loss = loss_epoch / float(num_batches)
                     out_f_loss = loss_f / float(num_batches)
                     tqdm.write(f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss:3.3f}, loss: {out_f_loss:3.3f}')
-            
+
             out_f_loss = loss_f / float(num_batches)
             out_loss = loss_epoch / float(num_batches)
             tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss:3.3f},  loss: {out_f_loss:3.3f}')
@@ -316,7 +316,7 @@ class Engine(object):
         if self.val_loss[-1] >= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -336,7 +336,7 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
             for i,e in enumerate(encoders):
                 torch.save(e.state_dict(), os.path.join(args.logdir, 'best_encoder_{}.pth'.format(i)))
@@ -344,14 +344,14 @@ class Engine(object):
                 torch.save(m.state_dict(), os.path.join(args.logdir, 'best_mesh_update_{}.pth'.format(i)))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
             tqdm.write('====== Overwrote best model ======>')
-            
-    
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
-    if epoch % 4 == 0: 
+    if epoch % 4 == 0:
         trainer.validate()
         trainer.save()
-        
-        
+
+

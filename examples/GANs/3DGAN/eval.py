@@ -45,7 +45,7 @@ gen.eval()
 z = torch.normal(torch.zeros(args.batchsize, 200), torch.ones(args.batchsize, 200)*.33).to(args.device)
 
 fake_voxels = gen(z)[:,0]
-for i,model in enumerate(fake_voxels): 
+for i,model in enumerate(fake_voxels):
     model = model[:-2,:-2,:-2]
     model = kal.rep.voxel.max_connected(model, .5)
     verts, faces = kal.conversion.voxel.to_mesh_quad(model)

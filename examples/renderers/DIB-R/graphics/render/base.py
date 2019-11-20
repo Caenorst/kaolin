@@ -37,7 +37,7 @@ from .phongrender import PhongRender
 
 
 
- 
+
 renderers = {'VertexColor': VCRender,'Lambertian': Lambertian, 'SphericalHarmonics': SHRender, 'Phong': PhongRender}
 class Render():
 
@@ -45,50 +45,50 @@ class Render():
         camera_up =None, camera_fov_y = None ):
         super(Render, self).__init__()
         assert mode in renderers, "Passed mode {0} must in in list of accepted modes: {1}".format(mode, renderers)
-        self.mode = mode 
-        self.renderer = renderers[mode](height, width) 
-        if camera_center is None: 
+        self.mode = mode
+        self.renderer = renderers[mode](height, width)
+        if camera_center is None:
             self.camera_center = np.array([0, 0, 0], dtype=np.float32)
-        if camera_up is None: 
+        if camera_up is None:
             self.camera_up = np.array([0, 1, 0], dtype=np.float32)
-        if camera_fov_y is None: 
-            self.camera_fov_y = 49.13434207744484 * np.pi/ 180.0 
-        self.camera_params = None 
+        if camera_fov_y is None:
+            self.camera_fov_y = 49.13434207744484 * np.pi/ 180.0
+        self.camera_params = None
 
 
-    
+
     def forward(self, points, colors, light=None, material=None,shininess=None):
-        
-        if self.camera_params is None: 
+
+        if self.camera_params is None:
             print ('Camera parameters have not been set, default pespective parameters\
              of distance = 1, elevation = 30, azimuth = 0 are being used')
             self.set_look_at_parameters( [0], [30], [1] )
-        
-        
+
+
         assert self.camera_params[0].shape[0] == points[0].shape[0], "Set camera parameters batch size must equal\
             batch size of passed points"
 
-        if self.mode in ['Lambertian', 'VertexColor']: 
+        if self.mode in ['Lambertian', 'VertexColor']:
             return self.renderer( points=points, cameras=self.camera_params, colors=colors)
-        elif self.mode == 'SphericalHarmonics': 
+        elif self.mode == 'SphericalHarmonics':
             assert light is not None, 'When using the Spherical Harmonics model, light parameters must be passed'
             return self.renderer(points=points, cameras=self.camera_params, colors=colors, lightparam=light)
-        elif self.mode == 'Phong': 
+        elif self.mode == 'Phong':
             assert light is not None, 'When using the Phong model, light parameters must be passed'
             assert material is not None, 'When using the Phong model, material parameters must be passed'
             assert shininess is not None, 'When using the Phong model, shininess parameters must be passed'
             return self.renderer(points=points, cameras=self.camera_params, colors=colors,\
-             lightdirect_bx3=light, material_bx3x3=material,shininess_bx1=shininess) 
+             lightdirect_bx3=light, material_bx3x3=material,shininess_bx1=shininess)
 
-    def set_look_at_parameters(self, azimuth, elevation, distance): 
-        
-        
+    def set_look_at_parameters(self, azimuth, elevation, distance):
+
+
         camera_projection_mtx = perspectiveprojectionnp(self.camera_fov_y, 1.0 )
         camera_projection_mtx = torch.FloatTensor(camera_projection_mtx).cuda()
-        
+
         camera_view_mtx = []
         camera_view_shift = []
-        for a, e, d in zip(azimuth, elevation, distance): 
+        for a, e, d in zip(azimuth, elevation, distance):
             mat, pos = compute_camera_params(a,e,d)
             camera_view_mtx.append(mat)
             camera_view_shift.append(pos)
@@ -96,10 +96,10 @@ class Render():
         camera_view_shift = torch.stack(camera_view_shift).cuda()
 
         self.camera_params = [camera_view_mtx, camera_view_shift, camera_projection_mtx]
-        
 
 
-    def set_camera_parameters(self, parameters): 
+
+    def set_camera_parameters(self, parameters):
         self.camera_params = parameters
 
 

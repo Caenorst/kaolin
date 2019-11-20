@@ -14,8 +14,8 @@
 
 import math
 
-import torch 
-from torch import nn 
+import torch
+from torch import nn
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 
@@ -27,65 +27,65 @@ from torch.nn import Parameter
 # from torch_geometric.nn import GCNConv
 
 class VGG(nn.Module):
-    
+
     def __init__(self, channels = 4):
-        
+
         super(VGG, self).__init__()
 
         self.layer0_1 = nn.Conv2d(channels, 16, 3, stride = 1, padding = 1)
         self.layer0_2 = nn.Conv2d(16, 16, 3, stride = 1, padding = 1)
-        
-        self.layer1_1 = nn.Conv2d(16, 32, 3, stride = 2, padding = 1) 
+
+        self.layer1_1 = nn.Conv2d(16, 32, 3, stride = 2, padding = 1)
         self.layer1_2 = nn.Conv2d(32, 32, 3, stride = 1, padding = 1)
         self.layer1_3 = nn.Conv2d(32, 32, 3, stride = 1, padding = 1)
-        
-        self.layer2_1 = nn.Conv2d(32, 64, 3, stride = 2, padding = 1) 
+
+        self.layer2_1 = nn.Conv2d(32, 64, 3, stride = 2, padding = 1)
         self.layer2_2 = nn.Conv2d(64, 64, 3, stride = 1, padding = 1)
         self.layer2_3 = nn.Conv2d(64, 64, 3, stride = 1, padding = 1)
-        
-        self.layer3_1 = nn.Conv2d(64, 128, 3, stride = 2, padding = 1) 
+
+        self.layer3_1 = nn.Conv2d(64, 128, 3, stride = 2, padding = 1)
         self.layer3_2 = nn.Conv2d(128, 128, 3, stride = 1, padding = 1)
         self.layer3_3 = nn.Conv2d(128, 128, 3, stride = 1, padding = 1)
-        
-        self.layer4_1 = nn.Conv2d(128, 256, 5, stride = 2, padding = 2) 
+
+        self.layer4_1 = nn.Conv2d(128, 256, 5, stride = 2, padding = 2)
         self.layer4_2 = nn.Conv2d(256, 256, 3, stride = 1, padding = 1)
         self.layer4_3 = nn.Conv2d(256, 256, 3, stride = 1, padding = 1)
-        
-        self.layer5_1 = nn.Conv2d(256, 512, 5, stride = 2, padding = 2) 
+
+        self.layer5_1 = nn.Conv2d(256, 512, 5, stride = 2, padding = 2)
         self.layer5_2 = nn.Conv2d(512, 512, 3, stride = 1, padding = 1)
         self.layer5_3 = nn.Conv2d(512, 512, 3, stride = 1, padding = 1)
         self.layer5_4 = nn.Conv2d(512, 512, 3, stride = 1, padding = 1)
-        
+
     def forward(self, img):
-        
+
         img = F.relu(self.layer0_1(img))
         img = F.relu(self.layer0_2(img))
-        
+
         img = F.relu(self.layer1_1(img))
         img = F.relu(self.layer1_2(img))
         img = F.relu(self.layer1_3(img))
-        
+
         img = F.relu(self.layer2_1(img))
         img = F.relu(self.layer2_2(img))
         img = F.relu(self.layer2_3(img))
-        A = torch.squeeze(img) 
-        
+        A = torch.squeeze(img)
+
         img = F.relu(self.layer3_1(img))
         img = F.relu(self.layer3_2(img))
         img = F.relu(self.layer3_3(img))
-        B = torch.squeeze(img) 
-        
+        B = torch.squeeze(img)
+
         img = F.relu(self.layer4_1(img))
         img = F.relu(self.layer4_2(img))
         img = F.relu(self.layer4_3(img))
-        C = torch.squeeze(img) 
-        
+        C = torch.squeeze(img)
+
         img = F.relu(self.layer5_1(img))
         img = F.relu(self.layer5_2(img))
         img = F.relu(self.layer5_3(img))
         img = F.relu(self.layer5_4(img))
-        D = torch.squeeze(img) 
-        
+        D = torch.squeeze(img)
+
         return [A, B, C, D]
 
 
@@ -165,7 +165,7 @@ class GCN(nn.Module):
         self.out_features = out_features
         self.weight = Parameter(torch.Tensor(in_features, out_features))
         self.bias = Parameter(torch.Tensor(out_features))
-      
+
         self.reset_parameters()
 
     def reset_parameters(self):
@@ -180,7 +180,7 @@ class GCN(nn.Module):
 
         output = torch.bmm(adj.unsqueeze(0).expand(input.shape[0], -1, -1), support)
 
-        
+
         output = output + self.bias
         return output
 

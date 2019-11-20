@@ -14,8 +14,8 @@
 
 import math
 
-import torch 
-from torch import nn 
+import torch
+from torch import nn
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 
@@ -30,63 +30,63 @@ class VGG(nn.Module):
         super(VGG, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(4, 16, kernel_size=3, padding=1), 
-            nn.BatchNorm2d(16), 
+            nn.Conv2d(4, 16, kernel_size=3, padding=1),
+            nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
 
         self.layer2 = nn.Sequential(
             nn.Conv2d(16, 16, kernel_size=3, padding=1),
-            nn.BatchNorm2d(16), 
+            nn.BatchNorm2d(16),
             nn.ReLU(inplace=True))
 
         self.layer3 = nn.Sequential(
             nn.Conv2d(16, 32, kernel_size=3, padding=1, stride = 2),
-            nn.BatchNorm2d(32), 
+            nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
 
         self.layer4 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
-            nn.BatchNorm2d(32), 
-            nn.ReLU(inplace=True))  
+            nn.BatchNorm2d(32),
+            nn.ReLU(inplace=True))
 
         self.layer5 = nn.Sequential(
             nn.Conv2d(32, 32, kernel_size=3, padding=1),
-            nn.BatchNorm2d(32), 
+            nn.BatchNorm2d(32),
             nn.ReLU(inplace=True))
 
         self.layer6 = nn.Sequential(
             nn.Conv2d(32, 64, kernel_size=3, padding=1, stride = 2),
-            nn.BatchNorm2d(64), 
+            nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
 
         self.layer7 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64), 
+            nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
 
         self.layer8 = nn.Sequential(
             nn.Conv2d(64, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(64), 
+            nn.BatchNorm2d(64),
             nn.ReLU(inplace=True))
 
         self.layer9 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=3, padding=1, stride = 2),
-            nn.BatchNorm2d(128),    
+            nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
 
         self.layer10 = nn.Sequential(
             nn.Conv2d(128, 128, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128),    
+            nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
 
         self.layer11 = nn.Sequential(
             nn.Conv2d(128, 128, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128),    
+            nn.BatchNorm2d(128),
             nn.ReLU(inplace=True))
 
         self.layer12 = nn.Sequential(
             nn.Conv2d(128, 256, kernel_size=3, padding=1, stride = 2),
-            nn.BatchNorm2d(256),    
+            nn.BatchNorm2d(256),
             nn.ReLU(inplace=True))
 
         self.layer13 = nn.Sequential(
@@ -94,7 +94,7 @@ class VGG(nn.Module):
             nn.BatchNorm2d(256),
             nn.ReLU(inplace=True))
 
-    
+
         self.layer14 = nn.Sequential(
             nn.Conv2d(256, 256, kernel_size=3, padding=1),
             nn.BatchNorm2d(256),
@@ -129,11 +129,11 @@ class VGG(nn.Module):
         x = self.layer6(x)
         x = self.layer7(x)
         x = self.layer8(x)
-        A = x 
-        x = self.layer9(x) 
+        A = x
+        x = self.layer9(x)
         x = self.layer10(x)
         x = self.layer11(x)
-        B = x 
+        B = x
         x = self.layer12(x)
         x = self.layer13(x)
         x = self.layer14(x)
@@ -244,20 +244,20 @@ class ZNGCN(nn.Module):
             self.bias.data.uniform_(-.1, .1)
 
     def forward(self, input, adj):
-        
+
         support = torch.mm(input, self.weight1)
         side_len = max(support.shape[1]//3, 2)
-        if adj.type() == 'torch.cuda.sparse.FloatTensor': 
-         
+        if adj.type() == 'torch.cuda.sparse.FloatTensor':
+
             norm = torch.sparse.mm(adj,torch.ones((support.shape[0], 1)).cuda())
             normalized_support = support[:, :side_len] /norm
             side_1 = torch.sparse.mm(adj, normalized_support)
-        else: 
+        else:
             side_1 = torch.mm(adj, support[:, :side_len])
-        
+
         side_2 = support[:,side_len: ]
         output = torch.cat((side_1, side_2), dim = 1)
-        
+
         if self.bias is not None:
             output = output + self.bias
         return output
@@ -291,7 +291,7 @@ class MeshEncoder(nn.Module):
         self.h9 = ZNGCN(300, 300)
         self.h10 = ZNGCN(300, 300)
         self.h11 = ZNGCN(300, 300)
-        self.reduce = ZNGCN(300,latent_length) 
+        self.reduce = ZNGCN(300,latent_length)
     def resnet( self, features, res):
         temp = features[:,:res.shape[1]]
         temp = temp + res
@@ -316,34 +316,34 @@ class MeshEncoder(nn.Module):
         features = F.elu(self.h9(features, adj))
         features = F.elu(self.h10(features, adj))
         features = F.elu(self.h11(features, adj))
-            
 
-        latent = F.elu(self.reduce(features , adj))  
-        latent = (torch.max(latent, dim = 0)[0])      
+
+        latent = F.elu(self.reduce(features , adj))
+        latent = (torch.max(latent, dim = 0)[0])
         return latent
 
 
-class VoxelDecoder(nn.Module): 
-    def __init__(self, latent_length): 
+class VoxelDecoder(nn.Module):
+    def __init__(self, latent_length):
         super(VoxelDecoder, self).__init__()
         self.fully = torch.nn.Sequential(
               torch.nn.Linear(latent_length, 512)
             )
 
         self.model = torch.nn.Sequential(
-            torch.nn.ConvTranspose3d( 64, 64, 4, stride=2, padding=(1, 1, 1), ), 
+            torch.nn.ConvTranspose3d( 64, 64, 4, stride=2, padding=(1, 1, 1), ),
             nn.BatchNorm3d(64),
             nn.ELU(inplace=True),
 
-            torch.nn.ConvTranspose3d( 64, 64, 4, stride=2, padding=(1, 1, 1)), 
+            torch.nn.ConvTranspose3d( 64, 64, 4, stride=2, padding=(1, 1, 1)),
             nn.BatchNorm3d(64),
             nn.ELU(inplace=True),
 
-            torch.nn.ConvTranspose3d( 64, 32, 4, stride=2, padding=(1, 1, 1)), 
+            torch.nn.ConvTranspose3d( 64, 32, 4, stride=2, padding=(1, 1, 1)),
             nn.BatchNorm3d(32),
             nn.ELU(inplace=True),
 
-            torch.nn.ConvTranspose3d( 32, 8, 4, stride=2, padding=(1, 1, 1)), 
+            torch.nn.ConvTranspose3d( 32, 8, 4, stride=2, padding=(1, 1, 1)),
             nn.BatchNorm3d(8),
             nn.ELU(inplace=True),
 

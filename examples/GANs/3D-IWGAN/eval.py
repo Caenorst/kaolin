@@ -30,7 +30,7 @@ torch.cuda.manual_seed(0)
 
 from architectures import Generator
 
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -50,7 +50,7 @@ z = torch.normal(torch.zeros(args.batchsize, 200), torch.ones(args.batchsize, 20
 
 fake_voxels = gen(z)
 
-for i,model in enumerate(fake_voxels): 
+for i,model in enumerate(fake_voxels):
     print ('Rendering model {}'.format(i))
     model = model[:-2,:-2,:-2]
     model = kal.rep.voxel.max_connected(model, .7)

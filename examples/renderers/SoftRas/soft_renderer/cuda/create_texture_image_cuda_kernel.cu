@@ -140,7 +140,7 @@ __global__ void create_texture_image_cuda_kernel(
 //     const int y = i / (tile_width * texture_res_out);
 //     if ((y % texture_res_out + 1) == (x % texture_res_out)) {
 //       for (int k = 0; k < 3; k++)
-//           image[i * 3 + k] = 
+//           image[i * 3 + k] =
 //               image[(y * tile_width * texture_res_out + (x - 1))  * 3 + k];
 //     }
 // }
@@ -176,7 +176,7 @@ at::Tensor create_texture_image_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
         printf("Error in create_texture_image: %s\n", cudaGetErrorString(err));
 
     return image;

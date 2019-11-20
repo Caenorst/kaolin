@@ -28,7 +28,7 @@ from utils import setup_meshes, split
 from utils import loss_surf, loss_edge, loss_lap, loss_norm
 from architectures import VGG as Encoder, G_Res_Net
 
-import kaolin as kal 
+import kaolin as kal
 """
 Commandline arguments
 """
@@ -57,7 +57,7 @@ images_set = kal.datasets.ShapeNet.Images(root ='../../datasets/',categories =ar
     download = True, train = True,  split = .7, views=23, transform= preprocess )
 train_set = kal.datasets.ShapeNet.Combination([points_set, images_set], root='../../datasets/')
 
-dataloader_train = DataLoader(train_set, batch_size=1, shuffle=True, 
+dataloader_train = DataLoader(train_set, batch_size=1, shuffle=True,
     num_workers=8)
 
 
@@ -67,24 +67,24 @@ images_set_valid = kal.datasets.ShapeNet.Images(root ='../../datasets/',categori
     download = True, train = False,  split = .7, views=1, transform= preprocess )
 valid_set = kal.datasets.ShapeNet.Combination([points_set_valid, images_set_valid], root='../../datasets/')
 
-dataloader_val = DataLoader(valid_set, batch_size=1, shuffle=False, 
+dataloader_val = DataLoader(valid_set, batch_size=1, shuffle=False,
     num_workers=8)
 
 
 
 """
-Model settings 
+Model settings
 """
 meshes = setup_meshes(filename='meshes/156.obj', device= args.device)
 
 
 
 encoder = Encoder().to(args.device)
-mesh_update_kernels = [963, 1091, 1091] 
+mesh_update_kernels = [963, 1091, 1091]
 mesh_updates = [G_Res_Net(mesh_update_kernels[i], hidden = 128, output_features = 3).to(args.device) for i in range(3)]
 
-parameters = list(encoder.parameters()) 
-for i in range(3): 
+parameters = list(encoder.parameters())
+for i in range(3):
     parameters += list(mesh_updates[i].parameters())
 optimizer = optim.Adam(parameters, lr=args.lr)
 
@@ -107,7 +107,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 class Engine(object):
     """Engine that runs training and inference.
@@ -115,7 +115,7 @@ class Engine(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -132,7 +132,7 @@ class Engine(object):
         # Train loop
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optimizer.zero_grad()
-            
+
             ###############################
             ####### data creation #########
             ###############################
@@ -147,26 +147,26 @@ class Engine(object):
             ###############################
             img_features = encoder(inp_images)
 
-            
-            ##### layer_1 ##### 
+
+            ##### layer_1 #####
             pool_indices = get_pooling_index(meshes['init'][0].vertices, cam_mat, cam_pos, encoding_dims)
             projected_image_features = pooling(img_features, pool_indices)
             full_vert_features = torch.cat((meshes['init'][0].vertices, projected_image_features), dim = 1)
-            
+
 
             pred_verts, future_features = mesh_updates[0](full_vert_features, meshes['adjs'][0])
             meshes['update'][0].vertices = pred_verts.clone()
 
-            ##### layer_2 ##### 
+            ##### layer_2 #####
             future_features = split(meshes, future_features, 0)
             pool_indices = get_pooling_index(meshes['init'][1].vertices, cam_mat, cam_pos, encoding_dims)
             projected_image_features = pooling(img_features, pool_indices)
             full_vert_features = torch.cat((meshes['init'][1].vertices, projected_image_features, future_features), dim = 1)
-            
+
             pred_verts, future_features = mesh_updates[1](full_vert_features, meshes['adjs'][1])
             meshes['update'][1].vertices = pred_verts.clone()
 
-            ##### layer_3 ##### 
+            ##### layer_3 #####
             future_features = split(meshes, future_features, 1)
             pool_indices = get_pooling_index(meshes['init'][2].vertices, cam_mat, cam_pos, encoding_dims)
             projected_image_features = pooling(img_features, pool_indices)
@@ -175,13 +175,13 @@ class Engine(object):
             pred_verts, future_features = mesh_updates[2](full_vert_features, meshes['adjs'][2])
             meshes['update'][2].vertices = pred_verts.clone()
 
-    
-        
+
+
             ###############################
             ########## losses #############
             ###############################
             surf_loss = 3000 * loss_surf(meshes, tgt_points)
-            edge_loss = 300  * loss_edge(meshes) 
+            edge_loss = 300  * loss_edge(meshes)
             lap_loss  = 1500 * loss_lap(meshes)
             norm_loss = .5   * loss_norm(meshes, tgt_points, tgt_norms)
             loss = surf_loss + edge_loss + lap_loss + norm_loss
@@ -191,23 +191,23 @@ class Engine(object):
             # logging
             num_batches += 1
             if i % args.print_every == 0:
-                f_loss = kal.metrics.point.f_score(meshes['update'][2].sample(2466)[0],tgt_points,  extend=False) 
+                f_loss = kal.metrics.point.f_score(meshes['update'][2].sample(2466)[0],tgt_points,  extend=False)
                 message = f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, Loss: {(surf_loss.item()):4.3f}, '
                 message = message + f'Lap: {(lap_loss.item()):3.3f}, Edge: {(edge_loss.item()):3.3f}, Norm: {(norm_loss.item()):3.3f}'
                 message = message + f' F: {(f_loss.item()):3.3f}'
                 tqdm.write(message)
             optimizer.step()
-        
-        
+
+
         loss_epoch = loss_epoch / num_batches
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
+
+
     def validate(self):
         encoder.eval(), [m.eval() for m in mesh_updates]
-        with torch.no_grad():   
+        with torch.no_grad():
             num_batches = 0
             loss_epoch = 0.
             f_loss = 0.
@@ -215,38 +215,38 @@ class Engine(object):
             # Validation loop
             for i, data in enumerate(tqdm(dataloader_val), 0):
                 optimizer.zero_grad()
-                
+
                 # data creation
                 tgt_points = data['points'].to(args.device)[0]
                 inp_images = data['imgs'].to(args.device)
                 cam_mat = data['cam_mat'].to(args.device)[0]
                 cam_pos = data['cam_pos'].to(args.device)[0]
 
-                
+
                 ###############################
                 ########## inference ##########
                 ###############################
                 img_features = encoder(inp_images)
-                
-                ##### layer_1 ##### 
+
+                ##### layer_1 #####
                 pool_indices = get_pooling_index(meshes['init'][0].vertices, cam_mat, cam_pos, encoding_dims)
                 projected_image_features = pooling(img_features, pool_indices)
                 full_vert_features = torch.cat((meshes['init'][0].vertices, projected_image_features), dim = 1)
-                
+
 
                 pred_verts, future_features = mesh_updates[0](full_vert_features, meshes['adjs'][0])
                 meshes['update'][0].vertices = pred_verts.clone()
 
-                ##### layer_2 ##### 
+                ##### layer_2 #####
                 future_features = split(meshes, future_features, 0)
                 pool_indices = get_pooling_index(meshes['init'][1].vertices, cam_mat, cam_pos, encoding_dims)
                 projected_image_features = pooling(img_features, pool_indices)
                 full_vert_features = torch.cat((meshes['init'][1].vertices, projected_image_features, future_features), dim = 1)
-                
+
                 pred_verts, future_features = mesh_updates[1](full_vert_features, meshes['adjs'][1])
                 meshes['update'][1].vertices = pred_verts.clone()
 
-                ##### layer_3 ##### 
+                ##### layer_3 #####
                 future_features = split(meshes, future_features, 1)
                 pool_indices = get_pooling_index(meshes['init'][2].vertices, cam_mat, cam_pos, encoding_dims)
                 projected_image_features = pooling(img_features, pool_indices)
@@ -254,10 +254,10 @@ class Engine(object):
 
                 pred_verts, future_features = mesh_updates[2](full_vert_features, meshes['adjs'][2])
                 meshes['update'][2].vertices = pred_verts.clone()
-                
+
                 f_loss += kal.metrics.point.f_score(meshes['update'][2].sample(2466)[0],tgt_points,  extend=False)
 
-            
+
                 ###############################
                 ########## losses #############
                 ###############################
@@ -270,7 +270,7 @@ class Engine(object):
                         out_loss = loss_epoch / float(num_batches)
                         f_out_loss = f_loss / float(num_batches)
                         tqdm.write(f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss:3.3f}, F: {(f_out_loss.item()):3.3f}')
-                        
+
             out_loss = loss_epoch / float(num_batches)
             f_out_loss = f_loss / float(num_batches)
             tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss:3.3f}, F: {(f_out_loss.item()):3.3f}')
@@ -283,7 +283,7 @@ class Engine(object):
         if self.val_loss[-1] <= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -302,21 +302,21 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
             torch.save(encoder.state_dict(), os.path.join(args.logdir, 'best_encoder.pth'))
             for i,m in enumerate(mesh_updates):
                 torch.save(m.state_dict(), os.path.join(args.logdir, 'best_mesh_update_{}.pth'.format(i)))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
             tqdm.write('====== Overwrote best model ======>')
-            
-    
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
-    if epoch % 4 == 0: 
+    if epoch % 4 == 0:
         trainer.validate()
         trainer.save()
-        
-        
+
+

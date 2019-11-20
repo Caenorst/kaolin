@@ -29,8 +29,8 @@ import argparse
 import neural_renderer as nr
 import soft_renderer as sr
 import kaolin as kal
-from kaolin.rep import TriangleMesh 
-import graphics 
+from kaolin.rep import TriangleMesh
+import graphics
 from graphics.render.base import Render as Dib_Renderer
 from graphics.utils.utils_sphericalcoord import get_spherical_coords_x
 from graphics.utils.utils_perspective import lookatnp, perspectiveprojectionnp
@@ -55,7 +55,7 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.textures = nn.Parameter(textures)
     def forward(self):
-        return torch.sigmoid(self.textures) 
+        return torch.sigmoid(self.textures)
 
 
 
@@ -69,30 +69,30 @@ def main():
     camera_distance = 2.732
     elevation = 0
     azimuth = 0
-  
+
     ###########################
     # load object
     ###########################
     filename_input = os.path.join(data_dir, 'banana.obj')
     filename_ref = os.path.join(data_dir, 'example3_ref.png')
-    
+
     mesh = TriangleMesh.from_obj(filename_input)
     vertices = mesh.vertices
     faces = mesh.faces.int()
     uvs = mesh.uvs
     face_textures = mesh.face_textures
-        
-    
+
+
     pmax = vertices.max()
     pmin = vertices.min()
     pmiddle = (pmax + pmin) / 2
-    vertices = vertices - pmiddle    
+    vertices = vertices - pmiddle
     coef = 8
     vertices = vertices * coef
 
-    
-    vertices = vertices[None, :, :].cuda()  
-    faces = faces[None, :, :].cuda() 
+
+    vertices = vertices[None, :, :].cuda()
+    faces = faces[None, :, :].cuda()
     uvs = uvs[None, :, :].cuda()
     face_textures[None, :, :].cuda()
 
@@ -100,7 +100,7 @@ def main():
 
 
     ##########################
-    #NMR 
+    #NMR
     ##########################
     textures = torch.rand(1, faces.shape[1], 2, 2, 2, 3, dtype=torch.float32)
     model = Model( textures ).cuda()
@@ -117,7 +117,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_nmr, 'texture.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_texture = model() 
+        new_texture = model()
         image_pred  ,_, _= renderer(vertices, faces, new_texture)
         loss = torch.sum((image_pred - image_gt)**2)
 
@@ -129,14 +129,14 @@ def main():
             writer.append_data((255*image).astype(np.uint8))
 
 
-   
+
 
     ##########################
-    #Soft Rasterizer 
+    #Soft Rasterizer
     ##########################
     textures = torch.rand(1, faces.shape[1], 2, 3, dtype=torch.float32)
     model = Model( textures ).cuda()
-    renderer = sr.SoftRenderer(image_size=256, sigma_val=3e-5, 
+    renderer = sr.SoftRenderer(image_size=256, sigma_val=3e-5,
                                camera_mode='look_at', perspective = False,
                                light_intensity_directionals = 0.0,light_intensity_ambient = 1.0  )
     renderer.transform.set_eyes_from_angles(camera_distance, elevation, azimuth)
@@ -146,7 +146,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_sr, 'texture.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_texture = model() 
+        new_texture = model()
         mesh = sr.Mesh(vertices, faces, new_texture)
         image_pred = renderer.render_mesh(mesh)
 
@@ -174,7 +174,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'texture_VertexColor.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_texture = model()         
+        new_texture = model()
 
         image_pred, alpha, _ = renderer.forward(points=[vertices, faces[0].long()], colors=[new_texture])
         image_pred = torch.cat((image_pred, alpha), dim = 3)
@@ -201,7 +201,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'texture_Lambertian.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_texture = model()         
+        new_texture = model()
 
         image_pred, alpha, _ = renderer.forward(points=[vertices, faces[0].long()], \
             colors=[uvs, face_textures.long(), new_texture])
@@ -229,11 +229,11 @@ def main():
 
 
     ### Lighting info ###
-    material = np.array([[0.3, 0.3, 0.3], 
+    material = np.array([[0.3, 0.3, 0.3],
                          [1.0, 1.0, 1.0],
                          [0.4, 0.4, 0.4]], dtype=np.float32).reshape(-1, 3, 3)
     material = torch.from_numpy(material).repeat(1, 1, 1).cuda()
-    
+
     shininess = np.array([100], dtype=np.float32).reshape(-1, 1)
     shininess = torch.from_numpy(shininess).repeat(1, 1).cuda()
 
@@ -246,7 +246,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'texture_Phong.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_texture = model()         
+        new_texture = model()
 
         image_pred, alpha, _ = renderer.forward(points=[vertices, faces[0].long()], \
             colors=[uvs, face_textures.long(), new_texture],\
@@ -275,19 +275,19 @@ def main():
     renderer = Dib_Renderer(256, 256, mode = 'SphericalHarmonics')
     renderer.set_look_at_parameters([90-azimuth], [elevation], [camera_distance])
     optimizer = torch.optim.Adam(model.parameters(), 0.01, betas=(0.5, 0.99))
-    
+
 
     lightparam = np.random.rand(1, 9).astype(np.float32)
     lightparam[:, 0] += 4
     lightparam = torch.from_numpy(lightparam).cuda()
-    
+
 
     loop = tqdm.tqdm(range(2000))
     loop.set_description('Optimizing SH')
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'texture_SH.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_texture = model()         
+        new_texture = model()
 
         image_pred, alpha, _ = renderer.forward(points=[vertices, faces[0].long()], \
             colors=[uvs, face_textures.long(), new_texture],\
@@ -304,7 +304,7 @@ def main():
             writer.append_data((255*image).astype(np.uint8))
 
 
- 
+
 
 if __name__ == '__main__':
     main()

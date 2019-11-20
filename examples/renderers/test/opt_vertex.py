@@ -29,8 +29,8 @@ import argparse
 import neural_renderer as nr
 import soft_renderer as sr
 import kaolin as kal
-from kaolin.rep import TriangleMesh 
-import graphics 
+from kaolin.rep import TriangleMesh
+import graphics
 from graphics.render.base import Render as Dib_Renderer
 from graphics.utils.utils_sphericalcoord import get_spherical_coords_x
 from graphics.utils.utils_perspective import lookatnp, perspectiveprojectionnp
@@ -68,8 +68,8 @@ def main():
     ###########################
     camera_distance = 2.732
     elevation = 0
-    azimuth = 0 
-  
+    azimuth = 0
+
     ###########################
     # load object
     ###########################
@@ -81,20 +81,20 @@ def main():
     mesh = TriangleMesh.from_obj(filename_input)
     vertices = mesh.vertices
     faces = mesh.faces.int()
-    uvs = torch.FloatTensor(get_spherical_coords_x(vertices.data.numpy())) 
+    uvs = torch.FloatTensor(get_spherical_coords_x(vertices.data.numpy()))
     face_textures = (faces).clone()
 
 
     pmax = vertices.max()
     pmin = vertices.min()
     pmiddle = (pmax + pmin) / 2
-    vertices = vertices - pmiddle    
+    vertices = vertices - pmiddle
     coef = 10
     vertices = vertices * coef
 
-    
-    vertices = vertices[None, :, :].cuda()  
-    faces = faces[None, :, :].cuda() 
+
+    vertices = vertices[None, :, :].cuda()
+    faces = faces[None, :, :].cuda()
     uvs = uvs[None, :, :].cuda()
     face_textures[None, :, :].cuda()
 
@@ -105,14 +105,14 @@ def main():
     vertices_min = vertices.min()
     vertices_middle = (vertices_max + vertices_min)/2.
     vertices = vertices - vertices_middle
-    
+
     # coef = 5
     # vertices = vertices * coef
 
 
 
     ###########################
-    # NMR 
+    # NMR
     ###########################
     textures = torch.ones(1, faces.shape[1], 2,2,2, 3, dtype=torch.float32).cuda()
     model = Model(vertices.clone()).cuda()
@@ -126,7 +126,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_nmr, 'deform.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_vertices = model() 
+        new_vertices = model()
         image_pred  ,_, _= renderer(new_vertices, faces, textures)
         loss = torch.sum((image_pred - image_gt[None, :, :])**2)
 
@@ -136,20 +136,20 @@ def main():
         if i % 20 == 0:
             image = image_pred.detach().cpu().numpy()[0].transpose((1, 2, 0))
             other_image = image_gt.detach().cpu().numpy().transpose((1, 2, 0))
-           
+
             pass_image = image + other_image
             writer.append_data((128*pass_image).astype(np.uint8))
 
 
-   
+
 
     ###########################
-    # Soft Rasterizer 
+    # Soft Rasterizer
     ###########################
     textures = torch.ones(1, faces.shape[1], 2, 3, dtype=torch.float32).cuda()
     model = Model(vertices.clone()).cuda()
     mesh = sr.Mesh(vertices, faces, textures)
-    renderer = sr.SoftRenderer(image_size=256, sigma_val=3e-5, aggr_func_rgb='hard', 
+    renderer = sr.SoftRenderer(image_size=256, sigma_val=3e-5, aggr_func_rgb='hard',
                                camera_mode='look_at')
     renderer.transform.set_eyes_from_angles(camera_distance, elevation, azimuth)
     optimizer = torch.optim.Adam(model.parameters(), 0.001, betas=(0.5, 0.99))
@@ -160,7 +160,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_sr, 'deform.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_vertices = model() 
+        new_vertices = model()
         new_mesh = sr.Mesh(new_vertices, faces, textures)
         image_pred = renderer.render_mesh(new_mesh)
         loss = torch.sum((image_pred - image_gt[None, :, :])**2)
@@ -170,17 +170,17 @@ def main():
         if i % 20 == 0:
             image = image_pred.detach().cpu().numpy()[0].transpose((1, 2, 0))
             other_image = image_gt.detach().cpu().numpy().transpose((1, 2, 0))
-           
+
             pass_image = image + other_image
             writer.append_data((128*pass_image).astype(np.uint8))
 
-    
+
 
     ################################
     # Dib-Renderer - Vertex Colours
     ################################
     model = Model(vertices.clone()).cuda()
-    textures = torch.ones(1, vertices.shape[1], 3).cuda() 
+    textures = torch.ones(1, vertices.shape[1], 3).cuda()
     renderer = Dib_Renderer(256, 256, mode = 'VertexColor')
     renderer.set_look_at_parameters([90-azimuth], [elevation], [camera_distance])
     optimizer = torch.optim.Adam(model.parameters(), 0.001, betas=(0.5, 0.99))
@@ -191,26 +191,26 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'deform_VertexColor.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_vertices = model() 
+        new_vertices = model()
         image_pred, alpha, _ = renderer.forward(points=[new_vertices, faces[0].long()], colors=[textures])
 
         image_pred = torch.cat((image_pred, alpha), dim = 3)
         image_pred = image_pred.permute(0,3,1,2)
-        
-        loss = torch.sum((image_pred - image_gt[None, :, :])**2) 
-     
+
+        loss = torch.sum((image_pred - image_gt[None, :, :])**2)
+
         loss.backward()
         optimizer.step()
-       
+
         loop.set_description('Loss: %.4f'%(loss.item()))
 
         if i % 20 == 0:
             image = image_pred.detach().cpu().numpy()[0].transpose((1, 2, 0))
             other_image = image_gt.detach().cpu().numpy().transpose((1, 2, 0))
-           
+
             pass_image = image + other_image
             writer.append_data((127*pass_image).astype(np.uint8))
-    
+
     ################################
     # Dib-Renderer - Lambertian
     ################################
@@ -226,22 +226,22 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'deform_Lambertian.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_vertices = model() 
+        new_vertices = model()
         image_pred, alpha, _ = renderer.forward(points=[new_vertices, faces[0].long()], colors=[uvs, face_textures.long(), textures])
         image_pred = torch.cat((image_pred, alpha), dim = 3)
         image_pred = image_pred.permute(0,3,1,2)
 
-        loss = torch.sum((image_pred - image_gt[None, :, :])**2) 
-     
+        loss = torch.sum((image_pred - image_gt[None, :, :])**2)
+
         loss.backward()
         optimizer.step()
-       
+
         loop.set_description('Loss: %.4f'%(loss.item()))
 
         if i % 20 == 0:
             image = image_pred.detach().cpu().numpy()[0].transpose((1, 2, 0))
             other_image = image_gt.detach().cpu().numpy().transpose((1, 2, 0))
-           
+
             pass_image = image + other_image
             writer.append_data((127*pass_image).astype(np.uint8))
 
@@ -250,17 +250,17 @@ def main():
     # Dib-Renderer - Phong
     ################################
     model = Model(vertices.clone()).cuda()
-    textures = torch.ones(1, 3, 256, 256).cuda() 
+    textures = torch.ones(1, 3, 256, 256).cuda()
     renderer = Dib_Renderer(256, 256, mode = 'Phong')
     renderer.set_look_at_parameters([90-azimuth], [elevation], [camera_distance])
     optimizer = torch.optim.Adam(model.parameters(), 0.001, betas=(0.5, 0.99))
 
     ### Lighting info ###
-    material = np.array([[0.1, 0.1, 0.1], 
+    material = np.array([[0.1, 0.1, 0.1],
                          [1.0, 1.0, 1.0],
                          [0.4, 0.4, 0.4]], dtype=np.float32).reshape(-1, 3, 3)
     material = torch.from_numpy(material).repeat(1, 1, 1).cuda()
-    
+
     shininess = np.array([100], dtype=np.float32).reshape(-1, 1)
     shininess = torch.from_numpy(shininess).repeat(1, 1).cuda()
 
@@ -273,7 +273,7 @@ def main():
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'deform_Phong.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_vertices = model() 
+        new_vertices = model()
         image_pred, alpha, _ = renderer.forward(points=[new_vertices, faces[0].long()], \
                                               colors=[uvs, face_textures.long(), textures],\
                                               light= lightdirect, \
@@ -282,17 +282,17 @@ def main():
         image_pred = torch.cat((image_pred, alpha), dim = 3)
         image_pred = image_pred.permute(0,3,1,2)
 
-        loss = torch.sum((image_pred - image_gt[None, :, :])**2) 
-     
+        loss = torch.sum((image_pred - image_gt[None, :, :])**2)
+
         loss.backward()
         optimizer.step()
-       
+
         loop.set_description('Loss: %.4f'%(loss.item()))
 
         if i % 20 == 0:
             image = image_pred.detach().cpu().numpy()[0].transpose((1, 2, 0))
             other_image = image_gt.detach().cpu().numpy().transpose((1, 2, 0))
-           
+
             pass_image = image + other_image
             writer.append_data((127*pass_image).astype(np.uint8))
 
@@ -309,31 +309,31 @@ def main():
     lightparam = np.random.rand(1, 9).astype(np.float32)
     lightparam[:, 0] += 2
     lightparam = torch.from_numpy(lightparam).cuda()
-    
+
 
     loop = tqdm.tqdm(range(2000))
     loop.set_description('Optimizing Dib_Renderer SH')
     writer = imageio.get_writer(os.path.join(output_directory_dib, 'deform_SH.gif'), mode='I')
     for i in loop:
         optimizer.zero_grad()
-        new_vertices = model() 
+        new_vertices = model()
         image_pred, alpha, _ = renderer.forward(points=[new_vertices, faces[0].long()],\
                 colors=[uvs, face_textures.long(), textures], light =lightparam)
         image_pred = torch.cat((image_pred, alpha), dim = 3)
 
         image_pred = image_pred.permute(0,3,1,2)
 
-        loss = torch.sum((image_pred - image_gt[None, :, :])**2) 
-     
+        loss = torch.sum((image_pred - image_gt[None, :, :])**2)
+
         loss.backward()
         optimizer.step()
-       
+
         loop.set_description('Loss: %.4f'%(loss.item()))
 
         if i % 20 == 0:
             image = image_pred.detach().cpu().numpy()[0].transpose((1, 2, 0))
             other_image = image_gt.detach().cpu().numpy().transpose((1, 2, 0))
-           
+
             pass_image = image + other_image
             writer.append_data((127*pass_image).astype(np.uint8))
 

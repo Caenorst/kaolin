@@ -11,7 +11,7 @@ This repository contains the code (in PyTorch) for "[Soft Rasterizer: A Differen
 
 ## Introduction
 
-Soft Rasterizer (SoftRas) is a truly differentiable renderer framework with a novel formulation that views rendering as a **differentiable aggregating process** that fuses **probabilistic contributions** of all mesh triangles with respect to the rendered pixels. Thanks to such *"soft"* formulation, our framework is able to (1) directly render colorized mesh using differentiable functions and (2) back-propagate efficient supervision signals to mesh vertices and their attributes (color, normal, etc.) from various forms of image representations, including silhouette, shading and color images. 
+Soft Rasterizer (SoftRas) is a truly differentiable renderer framework with a novel formulation that views rendering as a **differentiable aggregating process** that fuses **probabilistic contributions** of all mesh triangles with respect to the rendered pixels. Thanks to such *"soft"* formulation, our framework is able to (1) directly render colorized mesh using differentiable functions and (2) back-propagate efficient supervision signals to mesh vertices and their attributes (color, normal, etc.) from various forms of image representations, including silhouette, shading and color images.
 
 <img src="https://raw.githubusercontent.com/ShichenLiu/SoftRas/master/data/media/teaser/teaser.png" width="60%">
 
@@ -64,7 +64,7 @@ Training and testing code and models will be available upon pulication
 
 ### 3. Pose Optimization for Rigid Objects
 
-With scheduled blurry renderings, one can obtain smooth energy landscape that avoids local minima. 
+With scheduled blurry renderings, one can obtain smooth energy landscape that avoids local minima.
 Below we demonstrate how a color cube is fitted to the target image in the presence of large occlusions.
 The blurry rendering and the corresponding rendering losses are shown in the 3rd and 4th columns respectively.
 

@@ -56,7 +56,7 @@ def knn(x, k):
 
 class DGCNN(nn.Module):
     """Implementation of the DGCNNfor pointcloud classificaiton.
-    
+
     Args:
         input_dim (int): number of features per point. Default: ``3`` (xyz point coordinates)
         conv_dims (list): list of output feature dimensions of the convolutional layers. Default: ``[64,64,128,256]`` (as preoposed in original implementation).
@@ -70,7 +70,7 @@ class DGCNN(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{dgcnn,
@@ -110,7 +110,7 @@ class DGCNN(nn.Module):
                                   bias=False),
                         nn.BatchNorm2d(self.conv_dims[it + 1]),
                         nn.LeakyReLU(negative_slope=0.2))))
-        
+
         # create intermediate embedding
         self.embedding_layer = self.get_layer(
             nn.Sequential(

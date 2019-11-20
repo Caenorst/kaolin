@@ -50,11 +50,11 @@ args = parser.parse_args()
 Dataset
 """
 train_set = kal.datasets.ModelNet(root ='../../datasets/',categories = args.categories, download = True)
-dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True, 
+dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True,
     num_workers=8)
 
 """
-Model settings 
+Model settings
 """
 gen = Generator().to(args.device)
 dis = Discriminator().to(args.device)
@@ -72,7 +72,7 @@ if not os.path.isdir(args.logdir):
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
     json.dump(args.__dict__, f, indent=2)
- 
+
 
 class Engine(object):
     """Engine that runs training and inference.
@@ -80,7 +80,7 @@ class Engine(object):
         - cur_epoch (int): Current epoch.
         - print_every (int): How frequently (# batches) to print loss.
         - validate_every (int): How frequently (# epochs) to run validation.
-        
+
     """
 
     def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
@@ -99,11 +99,11 @@ class Engine(object):
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optim_g.zero_grad(), gen.zero_grad()
             optim_d.zero_grad(), dis.zero_grad()
-            
+
             # data creation
             real_voxels = torch.zeros(data['data'].shape[0], 32, 32, 32).to(args.device)
             real_voxels[:,1:-1,1:-1,1:-1] = data['data'].to(args.device)
-            
+
 
             # train discriminator
             z = torch.normal(torch.zeros(data['data'].shape[0], 200), torch.ones(data['data'].shape[0], 200)*.33).to(args.device)
@@ -111,15 +111,15 @@ class Engine(object):
             fake_voxels = gen(z)
             d_on_fake = dis(fake_voxels)
             d_on_real = dis(real_voxels)
-            
-            d_loss = -torch.mean(torch.log(d_on_real) + torch.log(1. - d_on_fake))
-            
 
-            d_accuracy = ((d_on_real >=.5).float().mean() + (d_on_fake < .5).float().mean()) / 2. 
+            d_loss = -torch.mean(torch.log(d_on_real) + torch.log(1. - d_on_fake))
+
+
+            d_accuracy = ((d_on_real >=.5).float().mean() + (d_on_fake < .5).float().mean()) / 2.
             g_accuracy =  (d_on_fake > .5).float().mean()
             train_dis = d_accuracy < .8
 
-            if train_dis: 
+            if train_dis:
                 dis.zero_grad()
                 d_loss.backward()
                 optim_d.step()
@@ -134,25 +134,25 @@ class Engine(object):
             gen.zero_grad()
             g_loss.backward()
             optim_g.step()
-    
-            
+
+
             # logging
             num_batches += 1
             if i % args.print_every == 0:
                 tqdm.write(f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}: gen: {float(g_accuracy.item()):2.3f}, dis = {float(d_accuracy.item()):2.3f}')
-        
-        
-        
+
+
+
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
-    
+
+
+
     def save(self):
 
-    
-        
+
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch
@@ -168,13 +168,13 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
 
-            
-    
+
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
-    if epoch % 10 == 9: 
+    if epoch % 10 == 9:
         trainer.save()

@@ -28,7 +28,7 @@ from graphics.render.base import Render as Dib_Renderer
 from graphics.utils.utils_perspective import  perspectiveprojectionnp
 from architectures import Encoder
 
-import kaolin as kal 
+import kaolin as kal
 
 
 """
@@ -67,21 +67,21 @@ dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True
 
 images_set_valid = kal.datasets.ShapeNet.Images(root ='../../datasets/',categories =args.categories , \
     download = True, train = False,  split = .7, views=1, transform= preprocess )
-dataloader_val = DataLoader(images_set_valid, batch_size=args.batchsize, shuffle=False, 
+dataloader_val = DataLoader(images_set_valid, batch_size=args.batchsize, shuffle=False,
     num_workers=8)
 
 
 
 """
-Model settings 
+Model settings
 """
 mesh = kal.rep.TriangleMesh.from_obj('386.obj', enable_adjacency= True)
 mesh.cuda()
 normalize_adj(mesh)
-    
+
 
 initial_verts = mesh.vertices.clone()
-camera_fov_y = 49.13434207744484 * np.pi/ 180.0 
+camera_fov_y = 49.13434207744484 * np.pi/ 180.0
 cam_proj = perspectiveprojectionnp(camera_fov_y, 1.0 )
 cam_proj =  torch.FloatTensor(cam_proj).cuda()
 
@@ -120,7 +120,7 @@ class Engine(object):
         # Train loop
         for i, data in enumerate(tqdm(dataloader_train), 0):
             optimizer.zero_grad()
-            
+
             # data creation
             tgt_points = data['points'].cuda()
             inp_images = data['imgs'].cuda()
@@ -129,32 +129,32 @@ class Engine(object):
             cam_mat = data['cam_mat'].cuda()
             cam_pos = data['cam_pos'].cuda()
 
-            # set viewing parameters 
+            # set viewing parameters
             renderer.camera_params = [cam_mat, cam_pos, cam_proj]
-        
+
             # predict mesh properties
             delta_verts, colours = model(inp_images)
             pred_verts = initial_verts + delta_verts
-        
+
             # render image
             image_pred, alpha_pred, face_norms = renderer.forward(points=[(pred_verts*.57), mesh.faces], colors=[colours])
-            
+
             # colour loss
             img_loss = ((image_pred - image_gt)**2).mean()
 
-            # alpha loss 
+            # alpha loss
             alpha_loss = ((alpha_pred - alhpa_gt)**2).mean()
 
             # mesh loss
             lap_loss = 0.
             flat_loss = 0.
-            for verts, tgt, norms in zip(pred_verts, tgt_points, face_norms):   
+            for verts, tgt, norms in zip(pred_verts, tgt_points, face_norms):
                 lap_loss += .1*loss_lap(mesh) / float(args.batchsize)
                 flat_loss += .0001 *loss_flat(mesh, norms) / float(args.batchsize)
 
 
 
-            loss =  img_loss + alpha_loss + lap_loss + flat_loss 
+            loss =  img_loss + alpha_loss + lap_loss + flat_loss
             loss.backward()
             loss_epoch += float(loss.item())
 
@@ -164,20 +164,20 @@ class Engine(object):
                 message = f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, Img: {(img_loss.item()):4.3f}, '
                 message = message + f' Alpha: {(alpha_loss.item()):3.3f}'
                 message = message + f' Flat: {(flat_loss.item()):3.3f}, Lap: {(lap_loss.item()):3.3f} '
-                
+
                 tqdm.write(message)
             optimizer.step()
-        
-        
+
+
         loss_epoch = loss_epoch / num_batches
         self.train_loss.append(loss_epoch)
         self.cur_epoch += 1
 
-        
-        
+
+
     def validate(self):
         model.eval()
-        with torch.no_grad():   
+        with torch.no_grad():
             num_batches = 0
             loss_epoch = 0.
 
@@ -191,18 +191,18 @@ class Engine(object):
                 cam_pos = data['cam_pos'].cuda()
 
 
-                # set viewing parameters 
+                # set viewing parameters
                 renderer.camera_params = [cam_mat, cam_pos, cam_proj]
-            
+
                 # predict mesh properties
                 delta_verts, colours = model(inp_images)
                 pred_verts = initial_verts + delta_verts
-            
+
                 # render image
                 image_pred, alpha_pred, _ = renderer.forward(points=[(pred_verts*.57 ), mesh.faces], colors=[colours])
-                
+
                 full_pred = torch.cat((image_pred, alpha_pred), dim = -1)
-    
+
                 # colour loss
                 img_loss = ((full_pred - image_gt)**2).mean()
                 loss_epoch += float(img_loss.item())
@@ -213,7 +213,7 @@ class Engine(object):
                     out_loss = loss_epoch / float(num_batches)
                     message = f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, loss: {(out_loss):4.3f}'
                     tqdm.write(message)
-                        
+
             out_loss = loss_epoch / float(num_batches)
             tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss:4.5f}')
 
@@ -225,7 +225,7 @@ class Engine(object):
         if self.val_loss[-1] <= self.bestval:
             self.bestval = self.val_loss[-1]
             save_best = True
-        
+
         # Create a dictionary of all data to save
         log_table = {
             'epoch': self.cur_epoch,
@@ -242,16 +242,16 @@ class Engine(object):
             f.write(json.dumps(log_table))
 
         tqdm.write('====== Saved recent model ======>')
-        
+
         if save_best:
             torch.save(model.state_dict(), os.path.join(args.logdir, 'best.pth'))
             torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
             tqdm.write('====== Overwrote best model ======>')
-            
-    
+
+
 trainer = Engine()
 
-for epoch in range(args.epochs): 
+for epoch in range(args.epochs):
     trainer.train()
     if epoch %4 == 0:
         trainer.validate()

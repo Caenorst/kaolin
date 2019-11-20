@@ -87,7 +87,7 @@ def test_threshold(device):
 @pytest.mark.parametrize('device', ['cpu', 'cuda'])
 def test_fill(device):
     voxel = torch.ones([32, 32, 32]).to(device)
-    voxel[16, 16, 16] = 0 
+    voxel[16, 16, 16] = 0
     filled_voxel = kal.conversions.voxelgridconversions.fill(voxel)
     assert voxel.sum() < filled_voxel.sum()
     assert filled_voxel.sum() == 32*32*32
@@ -115,7 +115,7 @@ def test_extract_surface(device):
     surface_voxel = kal.conversions.voxelgridconversions.extract_surface(voxel)
     assert voxel.sum() == surface_voxel.sum()
     assert surface_voxel.sum() == 0
-    assert kal.conversions.voxelgridconversions.extract_surface(surface_voxel).sum() == surface_voxel.sum() 
+    assert kal.conversions.voxelgridconversions.extract_surface(surface_voxel).sum() == surface_voxel.sum()
 
     voxel = torch.ones([64, 64, 64]).to(device)
     surface_voxel = kal.conversions.voxelgridconversions.extract_surface(voxel)
@@ -147,7 +147,7 @@ def test_extract_odms(device):
 
 
 @pytest.mark.parametrize('device', ['cpu', 'cuda'])
-def test_project_odms(device): 
+def test_project_odms(device):
 
     odms = torch.rand([32, 32, 32]).to(device) *32
     odms = odms.int()

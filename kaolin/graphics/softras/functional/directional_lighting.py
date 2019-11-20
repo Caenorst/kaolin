@@ -1,9 +1,9 @@
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -28,7 +28,7 @@ import torch.nn.functional as F
 import numpy as np
 
 
-def directional_lighting(light, normals, light_intensity=0.5, light_color=(1,1,1), 
+def directional_lighting(light, normals, light_intensity=0.5, light_color=(1,1,1),
                          light_direction=(0,1,0)):
     # normals: [nb, :, 3]
 

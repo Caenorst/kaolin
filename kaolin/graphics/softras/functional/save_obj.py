@@ -1,9 +1,9 @@
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -49,10 +49,10 @@ def create_texture_image(textures, texture_res=16):
     vertices = vertices.cuda()
     textures = textures.cuda()
     image = create_texture_image_cuda.create_texture_image(vertices, textures, image, 1e-5)
-    
+
     vertices[:, :, 0] /= (image.shape[1] - 1)
     vertices[:, :, 1] /= (image.shape[0] - 1)
-    
+
     image = image.detach().cpu().numpy()
     vertices = vertices.detach().cpu().numpy()
     image = image[::-1, ::1]
@@ -87,7 +87,7 @@ def save_obj(filename, vertices, faces, textures=None, texture_res=16, texture_t
 
         if textures is not None and texture_type == 'vertex':
             for vertex, color in zip(vertices, textures):
-                f.write('v %.8f %.8f %.8f %.8f %.8f %.8f\n' % (vertex[0], vertex[1], vertex[2], 
+                f.write('v %.8f %.8f %.8f %.8f %.8f %.8f\n' % (vertex[0], vertex[1], vertex[2],
                                                                color[0], color[1], color[2]))
             f.write('\n')
         else:

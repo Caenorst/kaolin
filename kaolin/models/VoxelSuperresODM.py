@@ -30,7 +30,7 @@ class SuperresNetwork(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @incollection{ODM,

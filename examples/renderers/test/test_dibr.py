@@ -14,7 +14,7 @@
 
 import os
 import sys
-import math 
+import math
 
 import torch
 import numpy as np
@@ -27,10 +27,10 @@ from kaolin.rep import TriangleMesh
 
 sys.path.append(str(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../DIB-R')))
 
-import graphics 
+import graphics
 from graphics.render.base import Render as Dib_Renderer
 import kaolin as kal
-from kaolin.rep import TriangleMesh 
+from kaolin.rep import TriangleMesh
 from graphics.utils.utils_sphericalcoord import get_spherical_coords_x
 from graphics.utils.utils_perspective import lookatnp, perspectiveprojectionnp
 
@@ -46,13 +46,13 @@ os.makedirs(output_directory_dib, exist_ok=True)
 def main():
     filename_input = os.path.join(data_dir, 'banana.obj')
     filename_output = os.path.join(output_directory, 'example1.gif')
-    
+
     ###########################
     # camera settings
     ###########################
     camera_distance = 2
     elevation = 30
-    
+
     ###########################
     # load object
     ###########################
@@ -60,8 +60,8 @@ def main():
     vertices = mesh.vertices
     faces = mesh.faces.int()
     face_textures = (faces).clone()
-    
-    vertices = vertices[None, :, :].cuda()  
+
+    vertices = vertices[None, :, :].cuda()
     faces = faces[None, :, :].cuda()
     face_textures[None, :, :].cuda()
 
@@ -72,7 +72,7 @@ def main():
     vertices_min = vertices.min()
     vertices_middle = (vertices_max + vertices_min)/2.
     vertices = vertices - vertices_middle
-    
+
     coef = 5
     vertices = vertices * coef
 

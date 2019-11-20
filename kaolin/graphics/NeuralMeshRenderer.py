@@ -536,8 +536,8 @@ if __name__ == '__main__':
     vertices = mesh.vertices
     faces = mesh.faces.long()
     face_textures = (faces).clone()
-    
-    vertices = vertices[None, :, :].cuda()  
+
+    vertices = vertices[None, :, :].cuda()
     faces = faces[None, :, :].cuda()
     face_textures[None, :, :].cuda()
 
@@ -545,7 +545,7 @@ if __name__ == '__main__':
     vertices_min = vertices.min()
     vertices_middle = (vertices_max + vertices_min)/2.
     vertices = vertices - vertices_middle
-    
+
     coef = 5
     vertices = vertices * coef
 

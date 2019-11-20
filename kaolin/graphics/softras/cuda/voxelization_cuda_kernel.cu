@@ -250,7 +250,7 @@ std::vector<at::Tensor> voxelize_sub1_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in voxelize_sub1_kernel: %s\n", cudaGetErrorString(err));
 
     return {voxels};
@@ -278,7 +278,7 @@ std::vector<at::Tensor> voxelize_sub2_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in voxelize_sub2_kernel: %s\n", cudaGetErrorString(err));
 
     return {voxels};
@@ -303,7 +303,7 @@ std::vector<at::Tensor> voxelize_sub3_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in voxelize_sub3_kernel: %s\n", cudaGetErrorString(err));
 
     return {voxels, visible};
@@ -328,7 +328,7 @@ std::vector<at::Tensor> voxelize_sub4_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in voxelize_sub4_kernel: %s\n", cudaGetErrorString(err));
 
     return {voxels, visible};

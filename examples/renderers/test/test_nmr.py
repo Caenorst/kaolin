@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-import math 
+import math
 
 import torch
 import numpy as np
@@ -36,13 +36,13 @@ os.makedirs(output_directory_nmr, exist_ok=True)
 def main():
     filename_input = os.path.join(data_dir, 'banana.obj')
     filename_output = os.path.join(output_directory, 'example1.gif')
-    
+
     ###########################
     # camera settings
     ###########################
     camera_distance = 2
     elevation = 30
-    
+
     ###########################
     # load object
     ###########################
@@ -50,8 +50,8 @@ def main():
     vertices = mesh.vertices
     faces = mesh.faces.int()
     face_textures = (faces).clone()
-    
-    vertices = vertices[None, :, :].cuda()  
+
+    vertices = vertices[None, :, :].cuda()
     faces = faces[None, :, :].cuda()
     face_textures[None, :, :].cuda()
 
@@ -62,12 +62,12 @@ def main():
     vertices_min = vertices.min()
     vertices_middle = (vertices_max + vertices_min)/2.
     vertices = vertices - vertices_middle
-    
+
     coef = 5
     vertices = vertices * coef
 
     ###########################
-    # NMR 
+    # NMR
     ###########################
     textures = torch.ones(1, faces.shape[1], 2, 2, 2, 3, dtype=torch.float32).cuda()
     renderer = nr.Renderer(camera_mode='look_at')
@@ -79,7 +79,7 @@ def main():
     # for num, azimuth in enumerate(loop):
     #     renderer.eye =  nr.get_points_from_angles(camera_distance, elevation, azimuth)
     #     images, _, _ = renderer(vertices, faces, textures)
-    #     image = images.detach().cpu().numpy()[0].transpose((1, 2, 0)) 
+    #     image = images.detach().cpu().numpy()[0].transpose((1, 2, 0))
     #     writer.append_data((255*image).astype(np.uint8))
     # writer.close()
 

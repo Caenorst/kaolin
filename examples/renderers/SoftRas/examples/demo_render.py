@@ -21,7 +21,7 @@
 # SOFTWARE.
 
 """
-Demo render. 
+Demo render.
 1. save / load textured .obj file
 2. render using SoftRas with different sigma / gamma
 """
@@ -41,9 +41,9 @@ data_dir = os.path.join(current_dir, '../data')
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--filename-input', type=str, 
+    parser.add_argument('-i', '--filename-input', type=str,
         default=os.path.join(data_dir, 'obj/spot/spot_triangulated.obj'))
-    parser.add_argument('-o', '--output-dir', type=str, 
+    parser.add_argument('-o', '--output-dir', type=str,
         default=os.path.join(data_dir, 'results/output_render'))
     args = parser.parse_args()
 

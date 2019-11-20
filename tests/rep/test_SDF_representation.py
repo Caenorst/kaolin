@@ -21,25 +21,25 @@ import kaolin as kal
 from kaolin.rep import TriangleMesh
 
 @pytest.mark.parametrize('device', ['cpu', 'cuda'])
-def test_check_sign(device): 
+def test_check_sign(device):
     mesh = TriangleMesh.from_obj(('tests/model.obj') )
-    if device == 'cuda': 
+    if device == 'cuda':
         mesh.cuda()
     points = torch.rand((1000,3), device=device) -.5
     signs = kal.rep.SDF.check_sign(mesh, points)
-    assert (signs == True).sum() > 0 
-    assert (signs == False).sum() > 0 
+    assert (signs == True).sum() > 0
+    assert (signs == False).sum() > 0
 
     points = (torch.rand((1000,3), device=device) -.5) * .001
     signs = kal.rep.SDF.check_sign(mesh, points)
-    assert (signs == False).sum() == 0 
+    assert (signs == False).sum() == 0
 
 
     points = torch.rand((1000,3), device=device) +10
     signs = kal.rep.SDF.check_sign(mesh, points)
-    assert (signs == True).sum() == 0 
+    assert (signs == True).sum() == 0
 
-# def test_check_sign_gpu(): 
+# def test_check_sign_gpu():
 #     test_check_sign("cuda")
 
 
@@ -64,5 +64,5 @@ def test_check_sign(device):
 #   sign = kal.rep.SDF.check_sign(mesh, points)
 #   import numpy as np
 #   sign = torch.from_numpy(np.asarray(sign)).cuda()
-    
+
 #   print((sign == sign_fast).float().sum())

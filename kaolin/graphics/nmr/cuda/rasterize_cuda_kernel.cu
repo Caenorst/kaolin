@@ -110,7 +110,7 @@ __global__ void forward_face_index_map_cuda_kernel_2(
     const int xi = pn % is;
     const scalar_t yp = (2. * yi + 1 - is) / is;
     const scalar_t xp = (2. * xi + 1 - is) / is;
-    
+
     const scalar_t* face = &faces[bn * nf * 9] - 9;
     scalar_t* face_inv = &faces_inv[bn * nf * 9] - 9;
     scalar_t depth_min = far;
@@ -121,23 +121,23 @@ __global__ void forward_face_index_map_cuda_kernel_2(
         /* go to next face */
         face += 9;
         face_inv += 9;
-    
+
         /* return if backside */
         if ((face[7] - face[1]) * (face[3] - face[0]) < (face[4] - face[1]) * (face[6] - face[0]))
             continue;
-    
+
         /* check [py, px] is inside the face */
         if (((yp - face[1]) * (face[3] - face[0]) < (xp - face[0]) * (face[4] - face[1])) ||
             ((yp - face[4]) * (face[6] - face[3]) < (xp - face[3]) * (face[7] - face[4])) ||
             ((yp - face[7]) * (face[0] - face[6]) < (xp - face[6]) * (face[1] - face[7])))
             continue;
-    
+
         /* compute w = face_inv * p */
         scalar_t w[3];
         w[0] = face_inv[3 * 0 + 0] * xi + face_inv[3 * 0 + 1] * yi + face_inv[3 * 0 + 2];
         w[1] = face_inv[3 * 1 + 0] * xi + face_inv[3 * 1 + 1] * yi + face_inv[3 * 1 + 2];
         w[2] = face_inv[3 * 2 + 0] * xi + face_inv[3 * 2 + 1] * yi + face_inv[3 * 2 + 2];
-    
+
         /* sum(w) -> 1, 0 < w < 1 */
         scalar_t w_sum = 0;
         for (int k = 0; k < 3; k++) {
@@ -152,7 +152,7 @@ __global__ void forward_face_index_map_cuda_kernel_2(
         if (zp <= near || far <= zp) {
             continue;
         }
-    
+
         /* check z-buffer */
         if (zp < depth_min) {
             depth_min = zp;
@@ -167,7 +167,7 @@ __global__ void forward_face_index_map_cuda_kernel_2(
             }
         }
     }
-    
+
     /* set to global memory */
     if (0 <= face_index_min) {
         depth_map[i] = depth_min;
@@ -203,7 +203,7 @@ __global__ void forward_texture_sampling_cuda_kernel(
         return;
     }
     const int face_index = face_index_map[i];
-    
+
     if (face_index >= 0) {
         /*
             from global variables:
@@ -220,7 +220,7 @@ __global__ void forward_texture_sampling_cuda_kernel(
         const scalar_t depth = depth_map[i];
         int32_t* sampling_indices = &sampling_index_map[i * 8];
         scalar_t* sampling_weights = &sampling_weight_map[i * 8];
-    
+
         /* get texture index (float) */
         scalar_t texture_index_float[3];
         for (int k = 0; k < 3; k++) { scalar_t tif = weight[k] * (ts - 1) * (depth / (face[3 * k + 2]));
@@ -228,7 +228,7 @@ __global__ void forward_texture_sampling_cuda_kernel(
             tif = min(tif, ts - 1 - eps);
             texture_index_float[k] = tif;
         }
-    
+
         /* blend */
         scalar_t new_pixel[3] = {0, 0, 0};
         for (int pn = 0; pn < 8; pn++) {
@@ -244,7 +244,7 @@ __global__ void forward_texture_sampling_cuda_kernel(
                     texture_index_int[k] = (int)texture_index_float[k] + 1;
                 }
             }
-    
+
             int isc = texture_index_int[0] * ts * ts + texture_index_int[1] * ts + texture_index_int[2];
             for (int k = 0; k < 3; k++)
                 new_pixel[k] += w * texture[isc * 3 + k];
@@ -539,7 +539,7 @@ __global__ void backward_textures_cuda_kernel(
         int nf = num_faces;
         int ts = texture_size;
         int bn = i / (is * is);    // batch number [0 -> bs]
-    
+
         scalar_t* grad_texture = &grad_textures[(bn * nf + face_index) * ts * ts * ts * 3];
         scalar_t* sampling_weight_map_p = &sampling_weight_map[i * 8];
         int* sampling_index_map_p = &sampling_index_map[i * 8];
@@ -566,7 +566,7 @@ __global__ void backward_depth_map_cuda_kernel(
         size_t batch_size,
         size_t num_faces,
         int image_size) {
-    
+
     const int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= batch_size * image_size * image_size) {
         return;
@@ -583,13 +583,13 @@ __global__ void backward_depth_map_cuda_kernel(
         const scalar_t* weight = &weight_map[i * 3];
         const scalar_t grad_depth = grad_depth_map[i];
         scalar_t* grad_face = &grad_faces[(bn * nf + fn) * 9];
-    
+
         /* derivative wrt z */
         for (int k = 0; k < 3; k++) {
             const scalar_t z_k = face[3 * k + 2];
             atomicAdd(&grad_face[3 * k + 2], grad_depth * weight[k] * depth2 / (z_k * z_k));
         }
-    
+
         /* derivative wrt x, y */
         scalar_t tmp[3] = {};
         for (int k = 0; k < 3; k++) {
@@ -636,7 +636,7 @@ std::vector<at::Tensor> forward_face_index_map_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in forward_face_index_map_1: %s\n", cudaGetErrorString(err));
 
     const dim3 blocks_2 ((batch_size * image_size * image_size - 1) / threads +1);
@@ -659,7 +659,7 @@ std::vector<at::Tensor> forward_face_index_map_cuda(
       }));
 
     err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in forward_face_index_map_2: %s\n", cudaGetErrorString(err));
     return {face_index_map, weight_map, depth_map, face_inv_map};
 }
@@ -699,7 +699,7 @@ std::vector<at::Tensor> forward_texture_sampling_cuda( at::Tensor faces,
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in forward_texture_sampling: %s\n", cudaGetErrorString(err));
 
     return {rgb_map, sampling_index_map, sampling_weight_map};
@@ -717,7 +717,7 @@ at::Tensor backward_pixel_map_cuda(
         float eps,
         int return_rgb,
         int return_alpha) {
-    
+
     const auto batch_size = faces.size(0);
     const auto num_faces = faces.size(1);
     const int threads = 512;
@@ -741,7 +741,7 @@ at::Tensor backward_pixel_map_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in backward_pixel_map: %s\n", cudaGetErrorString(err));
 
     return grad_faces;
@@ -775,7 +775,7 @@ at::Tensor backward_textures_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in backward_textures: %s\n", cudaGetErrorString(err));
 
     return grad_textures;
@@ -810,7 +810,7 @@ at::Tensor backward_depth_map_cuda(
       }));
 
     cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) 
+    if (err != cudaSuccess)
             printf("Error in backward_depth_map: %s\n", cudaGetErrorString(err));
 
     return grad_faces;

@@ -23,7 +23,7 @@ from torch.utils.data import DataLoader
 from architectures import upscale
 from utils import down_sample, up_sample
 from dataloaders import ModelNet_ODMS
-import kaolin as kal 
+import kaolin as kal
 
 
 parser = argparse.ArgumentParser()
@@ -55,14 +55,14 @@ num_batches = 0
 
 model.eval()
 with torch.no_grad():
-    for data in tqdm(dataloader_val): 
-        
+    for data in tqdm(dataloader_val):
+
         tgt_odms = data['odms'].to(args.device)
         tgt_voxels = data['voxels'].to(args.device)
         inp_voxels = down_sample(tgt_voxels)
         inp_odms = []
-        for voxel in inp_voxels: 
-            inp_odms.append(kal.rep.voxel.extract_odms(voxel).unsqueeze(0)) 
+        for voxel in inp_voxels:
+            inp_odms.append(kal.rep.voxel.extract_odms(voxel).unsqueeze(0))
         inp_odms = torch.cat(inp_odms)
 
         pred_odms = model(inp_odms)*30
@@ -73,17 +73,17 @@ with torch.no_grad():
 
         pred_odms = pred_odms.int()
         pred_voxels = []
-        for odms, NN_voxel in zip(pred_odms, NN_pred): 
+        for odms, NN_voxel in zip(pred_odms, NN_pred):
             pred_voxels.append(kal.rep.voxel.project_odms(odms, voxel= NN_voxel, votes = 2).unsqueeze(0))
         pred_voxels = torch.cat(pred_voxels)
         iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
         iou_epoch += iou
 
-        
+
 
         num_batches += 1
-        if args.vis: 
-            for i in range(inp_voxels.shape[0]):    
+        if args.vis:
+            for i in range(inp_voxels.shape[0]):
                 print ('Rendering low resolution input')
                 kal.visualize.show_voxel(inp_voxels[i], mode = 'exact', thresh = .5)
                 print ('Rendering high resolution target')

@@ -49,16 +49,16 @@ cdef class MISE:
 
         # Create initial voxels
         self.voxels.reserve(resolution_0 * resolution_0 * resolution_0)
-        
+
         cdef Voxel voxel
         cdef GridPoint point
         cdef Vector3D loc
         cdef int i, j, k
         for i in range(resolution_0):
-            for j in range(resolution_0): 
+            for j in range(resolution_0):
                 for  k in range (resolution_0):
                     loc = Vector3D(
-                        i * self.voxel_size_0, 
+                        i * self.voxel_size_0,
                         j * self.voxel_size_0,
                         k * self.voxel_size_0,
                     )
@@ -77,7 +77,7 @@ cdef class MISE:
             for j in range(resolution_0 + 1):
                 for k in range(resolution_0 + 1):
                     loc = Vector3D(
-                        i * self.voxel_size_0, 
+                        i * self.voxel_size_0,
                         j * self.voxel_size_0,
                         k * self.voxel_size_0,
                     )
@@ -110,7 +110,7 @@ cdef class MISE:
         cdef int n_unknown = 0
         for p in self.grid_points:
             if not p.known:
-                n_unknown += 1 
+                n_unknown += 1
 
         points.reserve(n_unknown)
         for p in self.grid_points:
@@ -133,7 +133,7 @@ cdef class MISE:
         cdef double[:, :, :] out_view = out_array
         cdef GridPoint point
         cdef int i, j, k
-        
+
         for point in self.grid_points:
             # Take voxel for which points is upper left corner
             # assert(point.known)
@@ -191,7 +191,7 @@ cdef class MISE:
         # Initialize vectors
         next_to_positive.resize(self.voxels.size(), False)
         next_to_negative.resize(self.voxels.size(), False)
-    
+
         # Iterate over grid points and mark voxels active
         # TODO: can move this to update operation and add attibute to voxel
         for grid_point in self.grid_points:
@@ -211,14 +211,14 @@ cdef class MISE:
                         idx = self.get_voxel_idx(adj_loc)
                         if idx == -1:
                             continue
-            
+
                         if grid_point.value >= self.threshold:
                             next_to_positive[idx] = True
                         if grid_point.value <= self.threshold:
                             next_to_negative[idx] = True
 
         cdef int n_subdivide = 0
-        
+
         for idx in range(self.voxels.size()):
             if not self.voxels[idx].is_leaf or self.voxels[idx].level == self.depth:
                 continue
@@ -246,7 +246,7 @@ cdef class MISE:
 
         # Current voxel is not leaf anymore
         self.voxels[idx].is_leaf = False
-        # Add new voxels        
+        # Add new voxels
         cdef int i, j, k
         for i in range(2):
             for j in range(2):
@@ -257,7 +257,7 @@ cdef class MISE:
                         z=loc0.z + k * new_size,
                     )
                     voxel = Voxel(
-                        loc=loc, 
+                        loc=loc,
                         level=new_level,
                         is_leaf=True
                     )
@@ -280,7 +280,7 @@ cdef class MISE:
                         self.add_grid_point(loc)
 
 
-    @cython.cdivision(True) 
+    @cython.cdivision(True)
     cdef long get_voxel_idx(self, Vector3D loc) except +:
         """Utility function for getting voxel index corresponding to 3D coordinates."""
         # Shorthands
@@ -292,13 +292,13 @@ cdef class MISE:
         # Return -1 if point lies outside bounds
         if not (0 <= loc.x < resolution and 0<= loc.y < resolution and 0 <= loc.z < resolution):
             return -1
-        
+
         # Coordinates in coarse voxel grid
         cdef Vector3D loc0 = Vector3D(
             x=loc.x >> depth,
             y=loc.y >> depth,
             z=loc.z >> depth,
-        )       
+        )
 
         # Initial voxels
         cdef int idx = vec_to_idx(loc0, resolution_0)
@@ -312,7 +312,7 @@ cdef class MISE:
             x=loc.x - (loc0.x << depth),
             y=loc.y - (loc0.y << depth),
             z=loc.z - (loc0.z << depth),
-        ) 
+        )
 
         cdef Vector3D loc_offset
         cdef long voxel_size = voxel_size_0
@@ -336,7 +336,7 @@ cdef class MISE:
                 x=loc_rel.x - loc_offset.x * voxel_size,
                 y=loc_rel.y - loc_offset.y * voxel_size,
                 z=loc_rel.z - loc_offset.z * voxel_size,
-            ) 
+            )
 
             assert(0<= loc_rel.x < voxel_size)
             assert(0<= loc_rel.y < voxel_size)

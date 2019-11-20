@@ -1,9 +1,9 @@
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -69,11 +69,11 @@ class Mesh(object):
         # create textures
         if textures is None:
             if texture_type == 'surface':
-                self._textures = torch.ones(self.batch_size, self.num_faces, texture_res**2, 3, 
+                self._textures = torch.ones(self.batch_size, self.num_faces, texture_res**2, 3,
                                             dtype=torch.float32).to(self.device)
                 self.texture_res = texture_res
             elif texture_type == 'vertex':
-                self._textures = torch.ones(self.batch_size, self.num_vertices, 3, 
+                self._textures = torch.ones(self.batch_size, self.num_vertices, 3,
                                             dtype=torch.float32).to(self.device)
                 self.texture_res = 1
         else:
@@ -168,7 +168,7 @@ class Mesh(object):
         self.faces = self._origin_faces
         self.textures = self._origin_textures
         self._fill_back = False
-    
+
     @classmethod
     def from_obj(cls, filename_obj, normalization=False, load_texture=False, texture_res=1, texture_type='surface'):
         '''
@@ -192,7 +192,7 @@ class Mesh(object):
         if self.batch_size != 1:
             raise ValueError('Could not save when batch size >= 1')
         if save_texture:
-            srf.save_obj(filename_obj, self.vertices[0], self.faces[0], 
+            srf.save_obj(filename_obj, self.vertices[0], self.faces[0],
                          textures=self.textures[0],
                          texture_res=texture_res_out, texture_type=self.texture_type)
         else:

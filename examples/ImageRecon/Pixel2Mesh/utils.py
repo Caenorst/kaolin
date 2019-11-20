@@ -12,9 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch 
+import torch
 from torchvision import transforms
-from torchvision.transforms import Normalize as norm 
+from torchvision.transforms import Normalize as norm
 import trimesh
 from sklearn.preprocessing import normalize
 import kaolin as kal
@@ -38,10 +38,10 @@ def get_pooling_index( positions, cam_mat, cam_pos, dims):
 
     #project points into 2D
     positions = positions * .57 # accounting for recaling in 3Dr2n
-    positions = positions - cam_pos 
+    positions = positions - cam_pos
     positions = torch.mm(positions,cam_mat.permute(1,0))
     positions_xs =  positions[:, 1] / positions[:, 2]
-    positions_ys = -positions[:, 0] / positions[:, 2] 
+    positions_ys = -positions[:, 0] / positions[:, 2]
 
     # do bilinear interpolation over pixel coordiantes
     data_meta = defaultdict(list)
@@ -57,12 +57,12 @@ def get_pooling_index( positions, cam_mat, cam_pos, dims):
 
 
         # img = np.zeros((dim,dim))
-        # for x,y in zip (cur_xs, cur_ys): 
+        # for x,y in zip (cur_xs, cur_ys):
         #   img[x.int(), y.int()] = 255
         # from PIL import Image
         # Image.fromarray(img).show()
-        
-        
+
+
         x1s, y1s, x2s, y2s = torch.floor(cur_xs), torch.floor(cur_ys), torch.ceil(cur_xs), torch.ceil(cur_ys)
 
         A = x2s - cur_xs
@@ -70,8 +70,8 @@ def get_pooling_index( positions, cam_mat, cam_pos, dims):
         G = y2s - cur_ys
         H = cur_ys - y1s
 
-        y1s = y1s + torch.arange(positions.shape[0]).float().to(positions.device)*dim 
-        y2s = y2s + torch.arange(positions.shape[0]).float().to(positions.device)*dim 
+        y1s = y1s + torch.arange(positions.shape[0]).float().to(positions.device)*dim
+        y2s = y2s + torch.arange(positions.shape[0]).float().to(positions.device)*dim
 
         data_meta['A'].append(A.float().unsqueeze(0))
         data_meta['B'].append(B.float().unsqueeze(0))
@@ -92,9 +92,9 @@ def get_pooling_index( positions, cam_mat, cam_pos, dims):
 
 def pooling(blocks, pooling_indices):
 
-    full_features = None 
+    full_features = None
     for i_block, block in enumerate(blocks):
-       
+
         A = pooling_indices['A'][i_block]
         B = pooling_indices['B'][i_block]
         G = pooling_indices['G'][i_block]
@@ -120,12 +120,12 @@ def pooling(blocks, pooling_indices):
 
         if full_features is None: full_features = features
         else: full_features = torch.cat((full_features, features), dim = 1)
- 
+
     return full_features
 
 norm_distance = kal.metrics.point.SidedDistance()
 
-def chamfer_normal(pred_mesh, gt_points,gt_norms): 
+def chamfer_normal(pred_mesh, gt_points,gt_norms):
 
     # find closest gt points
     gt_indices = norm_distance(pred_mesh.vertices.unsqueeze(0), gt_points.unsqueeze(0))[0]
@@ -136,12 +136,12 @@ def chamfer_normal(pred_mesh, gt_points,gt_norms):
     vertex_norms = gt_norm_selections.view(-1,1,3).expand(new_dimensions)
 
 
-    
+
     # get all nieghbor positions
     neighbor_indecies = pred_mesh.vv.clone()
     empty_indecies = (neighbor_indecies >=0)
     other_indecies = (neighbor_indecies <0)
-    neighbor_indecies[other_indecies] = 0 
+    neighbor_indecies[other_indecies] = 0
     empty_indecies = (empty_indecies).float().unsqueeze(-1)
     neighbor_indecies = neighbor_indecies.view(-1)
     vertex_neighbors  = pred_mesh.vertices[neighbor_indecies].view(new_dimensions)
@@ -149,22 +149,22 @@ def chamfer_normal(pred_mesh, gt_points,gt_norms):
     # mask both tensors
     vertex_norms = vertex_norms * empty_indecies
     vertex_norms = vertex_norms.contiguous().view(-1,3)
-    vertex_neighbors = vertex_neighbors * empty_indecies 
+    vertex_neighbors = vertex_neighbors * empty_indecies
     vertex_neighbors = vertex_neighbors.contiguous().view(-1,3)
 
-    # calculate normal loss, devide by number of unmasked elements to get mean 
-    normal_loss = (torch.abs(torch.sum(vertex_norms * vertex_neighbors, dim = 1))) 
+    # calculate normal loss, devide by number of unmasked elements to get mean
+    normal_loss = (torch.abs(torch.sum(vertex_norms * vertex_neighbors, dim = 1)))
     normal_loss = normal_loss.sum() / float(empty_indecies.sum())
     return normal_loss
 
 
 
 
-def setup_meshes(filename='meshes/156.obj', device="cuda" ): 
-    
+def setup_meshes(filename='meshes/156.obj', device="cuda" ):
+
 
     mesh_1 = kal.rep.TriangleMesh.from_obj(filename, enable_adjacency=True)
-    if device == 'cuda': 
+    if device == 'cuda':
         mesh_1.cuda()
     adj_1 = mesh_1.compute_adjacency_matrix_full().clone()
     adj_1 = normalize_adj(adj_1)
@@ -198,7 +198,7 @@ def normalize_adj(mx):
     r_mat_inv = torch.eye(r_inv.shape[0]).to(mx.device)*r_inv
     mx = torch.mm(r_mat_inv,mx)
     return mx
-    
+
 
 
 def split(meshes, features, index):
@@ -214,29 +214,29 @@ def split_mesh(mesh):
     constant_vertex_count = vertex_count
     columns = np.zeros((vertex_count, 0))
     new_faces = []
-    
 
 
-    for face in faces: 
+
+    for face in faces:
         x,y,z = face.int()
         new_verts = []
         edges = [[x,y], [y,z], [z, x]]
 
         for a,b in edges:
 
-            key = [a,b] 
+            key = [a,b]
             key.sort()
             key = str(key)
-            if key in tracker: 
+            if key in tracker:
                 new_verts.append(tracker[key])
-            else: 
-                new_verts.append(vertex_count) 
+            else:
+                new_verts.append(vertex_count)
                 column = np.zeros((constant_vertex_count, 1))
                 column[a] = .5
                 column[b] = .5
                 columns = np.concatenate((columns, column), axis = 1)
-                tracker[key] = vertex_count  
-                vertex_count += 1 
+                tracker[key] = vertex_count
+                vertex_count += 1
 
         v1,v2,v3 = new_verts
         new_faces.append([x,v1,v3])
@@ -253,25 +253,25 @@ def split_mesh(mesh):
 
     return updated_mesh, split_mx
 
-def split_features(split_mx, features): 
+def split_features(split_mx, features):
     features = features.permute(1,0)
     new_features = torch.mm(features, split_mx)
     features = torch.cat((features, new_features), dim= 1 ).permute(1,0)
     return features
 
-def loss_surf(meshes, tgt_points):  
-    loss =  kal.metrics.point.chamfer_distance(meshes['update'][0].vertices, tgt_points, w1=1., w2 =0.55) 
-    loss += kal.metrics.point.chamfer_distance(meshes['update'][1].vertices, tgt_points, w1=1., w2 =0.55) 
-    loss += kal.metrics.point.chamfer_distance(meshes['update'][2].vertices, tgt_points, w1=1., w2 =0.55) 
+def loss_surf(meshes, tgt_points):
+    loss =  kal.metrics.point.chamfer_distance(meshes['update'][0].vertices, tgt_points, w1=1., w2 =0.55)
+    loss += kal.metrics.point.chamfer_distance(meshes['update'][1].vertices, tgt_points, w1=1., w2 =0.55)
+    loss += kal.metrics.point.chamfer_distance(meshes['update'][2].vertices, tgt_points, w1=1., w2 =0.55)
     return loss
 
-def loss_edge(meshes):  
+def loss_edge(meshes):
     loss =  kal.metrics.mesh.edge_length(meshes['update'][0])
     loss += kal.metrics.mesh.edge_length(meshes['update'][1])
     loss += kal.metrics.mesh.edge_length(meshes['update'][2])
     return loss
 
-def loss_lap(meshes): 
+def loss_lap(meshes):
     loss =  .1* kal.metrics.mesh.laplacian_loss(meshes['init'][0],meshes['update'][0])
     loss += kal.metrics.mesh.laplacian_loss(meshes['init'][1],meshes['update'][1])
     loss += kal.metrics.mesh.laplacian_loss(meshes['init'][2],meshes['update'][2])
@@ -279,13 +279,13 @@ def loss_lap(meshes):
     loss += torch.sum((meshes['init'][0].vertices-meshes['update'][0].vertices)**2, 1).mean() * .0666 * .1
     loss += torch.sum((meshes['init'][1].vertices-meshes['update'][1].vertices)**2, 1).mean() * .0666
     loss += torch.sum((meshes['init'][2].vertices-meshes['update'][2].vertices)**2, 1).mean() * .0666
-    
-    return loss 
 
-def loss_norm(meshes, tgt_points, tgt_norms): 
+    return loss
+
+def loss_norm(meshes, tgt_points, tgt_norms):
     loss =  chamfer_normal(meshes['update'][0], tgt_points, tgt_norms)
     loss += chamfer_normal(meshes['update'][1], tgt_points, tgt_norms)
     loss += chamfer_normal(meshes['update'][2], tgt_points, tgt_norms)
-    return loss 
+    return loss
 
 

@@ -26,7 +26,7 @@ import torch.nn.functional as F
 import numpy as np
 
 
-def directional_lighting(light, normals, light_intensity=0.5, light_color=(1,1,1), 
+def directional_lighting(light, normals, light_intensity=0.5, light_color=(1,1,1),
                          light_direction=(0,1,0)):
     # normals: [nb, :, 3]
 

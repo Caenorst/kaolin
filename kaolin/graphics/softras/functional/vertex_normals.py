@@ -1,9 +1,9 @@
 # Soft Rasterizer (SoftRas)
-# 
+#
 # Copyright (c) 2017 Hiroharu Kato
 # Copyright (c) 2018 Nikos Kolotouros
 # Copyright (c) 2019 Shichen Liu
-# 
+#
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
@@ -48,9 +48,9 @@ def vertex_normals(vertices, faces):
     faces = faces.view(-1, 3)
     vertices_faces = vertices_faces.view(-1, 3, 3)
 
-    normals.index_add_(0, faces[:, 1].long(), 
+    normals.index_add_(0, faces[:, 1].long(),
                        torch.cross(vertices_faces[:, 2] - vertices_faces[:, 1], vertices_faces[:, 0] - vertices_faces[:, 1]))
-    normals.index_add_(0, faces[:, 2].long(), 
+    normals.index_add_(0, faces[:, 2].long(),
                        torch.cross(vertices_faces[:, 0] - vertices_faces[:, 2], vertices_faces[:, 1] - vertices_faces[:, 2]))
     normals.index_add_(0, faces[:, 0].long(),
                        torch.cross(vertices_faces[:, 1] - vertices_faces[:, 0], vertices_faces[:, 2] - vertices_faces[:, 0]))

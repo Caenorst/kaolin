@@ -218,7 +218,7 @@ def normalize(cloud: Union[torch.Tensor, PointCloud],
 if __name__ == '__main__':
 
     device = 'cpu'
-    
+
     # Test: realign
     src = torch.randn(2, 3, 4, 3).to(device)
     tgt = torch.rand(2, 3, 4, 3).to(device)

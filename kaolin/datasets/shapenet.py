@@ -149,7 +149,7 @@ class ShapeNet_Meshes(data.Dataset):
 
     Returns:
         .. code-block::
-        
+
         dict: {
             attributes: {name: str, path: str, synset: str, label: str},
             data: {vertices: torch.Tensor, faces: torch.Tensor}
@@ -451,7 +451,7 @@ class ShapeNet_Surface_Meshes(data.Dataset):
     """
 
     def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
-                 download: bool = True, split: float = .7, resolution: int = 100, 
+                 download: bool = True, split: float = .7, resolution: int = 100,
                  smoothing_iterations: int = 3, mode='Tri', no_progress: bool = False):
         assert mode in ['Tri', 'Quad']
 
@@ -963,7 +963,7 @@ class ShapeNet_Tags(data.Dataset):
             return res_tag_list, max_ind
 
     def tag_proc(self, tag_list):
-        """Get the embedding from the list of tags. By default this functions does 
+        """Get the embedding from the list of tags. By default this functions does
         one-hot encoding of the tags, but can be replaced by more complex encodings.
 
         Args:
@@ -1049,7 +1049,7 @@ class ShapeNet_Combination(data.Dataset):
         distance
         points
         normals
-        
+
     """
 
     def __init__(self, datasets):
