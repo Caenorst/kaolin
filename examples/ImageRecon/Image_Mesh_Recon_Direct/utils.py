@@ -27,7 +27,7 @@ preprocess = transforms.Compose([
 
 
 def loss_lap(mesh1, deltas ): 
-	mesh2 = kal.rep.TriangleMesh.from_tensors(mesh1.vertices - deltas, mesh1.faces)
-	loss =   kal.metrics.mesh.laplacian_loss(mesh1, mesh2)
-	loss += torch.sum((deltas)**2, 1).mean() * .0666 
-	return loss 
+    mesh2 = kal.rep.TriangleMesh.from_tensors(mesh1.vertices - deltas, mesh1.faces)
+    loss =   kal.metrics.mesh.laplacian_loss(mesh1, mesh2)
+    loss += torch.sum((deltas)**2, 1).mean() * .0666 
+    return loss 

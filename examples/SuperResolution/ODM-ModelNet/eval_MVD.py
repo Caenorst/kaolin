@@ -41,9 +41,9 @@ args = parser.parse_args()
 
 # Data
 valid_set = ModelNet_ODMS(root ='../../datasets/',categories = ['chair'], \
-	download = True, train = False)
+    download = True, train = False)
 dataloader_val = DataLoader(valid_set, batch_size=args.batchsize, shuffle=False, \
-	num_workers=8)
+    num_workers=8)
 
 # Model
 model_res = upscale(30,15)
@@ -63,60 +63,60 @@ num_batches = 0
 model_res.eval()
 model_occ.eval()
 with torch.no_grad():
-	for data in tqdm(dataloader_val): 
-		
-		tgt_odms = data['odms'].to(args.device)
-		tgt_voxels = data['voxels'].to(args.device)
-		inp_voxels = down_sample(tgt_voxels)
-		inp_odms = []
-		for voxel in inp_voxels: 
-			inp_odms.append(kal.rep.voxel.extract_odms(voxel).unsqueeze(0)) 
-		inp_odms = torch.cat(inp_odms)
-		
-		# inference res
-		initial_odms = upsample_omd(inp_odms)*2
-		distance = 30 - initial_odms
-		pred_odms_update = model_res(inp_odms)
-		pred_odms_update = pred_odms_update * distance
-		pred_odms_res = initial_odms + pred_odms_update
+    for data in tqdm(dataloader_val): 
+        
+        tgt_odms = data['odms'].to(args.device)
+        tgt_voxels = data['voxels'].to(args.device)
+        inp_voxels = down_sample(tgt_voxels)
+        inp_odms = []
+        for voxel in inp_voxels: 
+            inp_odms.append(kal.rep.voxel.extract_odms(voxel).unsqueeze(0)) 
+        inp_odms = torch.cat(inp_odms)
+        
+        # inference res
+        initial_odms = upsample_omd(inp_odms)*2
+        distance = 30 - initial_odms
+        pred_odms_update = model_res(inp_odms)
+        pred_odms_update = pred_odms_update * distance
+        pred_odms_res = initial_odms + pred_odms_update
 
-		# inference occ
-		pred_odms_occ = model_occ(inp_odms)
+        # inference occ
+        pred_odms_occ = model_occ(inp_odms)
 
-		# combine
-		pred_odms_res = pred_odms_res.int()
-		ones = pred_odms_occ > .5
-		zeros = pred_odms_occ <= .5
-		pred_odms_occ[ones] =  pred_odms_occ.shape[-1]
-		pred_odms_occ[zeros] = 0  
+        # combine
+        pred_odms_res = pred_odms_res.int()
+        ones = pred_odms_occ > .5
+        zeros = pred_odms_occ <= .5
+        pred_odms_occ[ones] =  pred_odms_occ.shape[-1]
+        pred_odms_occ[zeros] = 0  
 
-		NN_pred = up_sample(inp_voxels)
-		iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt_voxels)
-		iou_NN_epoch += iou_NN
-		
-		pred_voxels = []
-		for i in range(inp_voxels.shape[0]):	
-			voxel = NN_pred[i]			
-			voxel = kal.rep.voxel.project_odms(pred_odms_res[i], voxel = voxel, votes = 2)
-			voxel = kal.rep.voxel.project_odms(pred_odms_occ[i], voxel = voxel, votes = 2)
-			voxel = voxel.unsqueeze(0)
-			pred_voxels.append(voxel)
-		pred_voxels = torch.cat(pred_voxels)
-		iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
-		iou_epoch += iou
+        NN_pred = up_sample(inp_voxels)
+        iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt_voxels)
+        iou_NN_epoch += iou_NN
+        
+        pred_voxels = []
+        for i in range(inp_voxels.shape[0]):    
+            voxel = NN_pred[i]          
+            voxel = kal.rep.voxel.project_odms(pred_odms_res[i], voxel = voxel, votes = 2)
+            voxel = kal.rep.voxel.project_odms(pred_odms_occ[i], voxel = voxel, votes = 2)
+            voxel = voxel.unsqueeze(0)
+            pred_voxels.append(voxel)
+        pred_voxels = torch.cat(pred_voxels)
+        iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
+        iou_epoch += iou
 
-		
-		if args.vis: 
-			for i in range(inp_voxels.shape[0]):	
-			
-				print ('Rendering low resolution input')
-				kal.visualize.show_voxel(inp_voxels[i], mode = 'exact', thresh = .5)
-				print ('Rendering high resolution target')
-				kal.visualize.show_voxel(tgt_voxels[i], mode = 'exact', thresh = .5)
-				print ('Rendering high resolution prediction')
-				kal.visualize.show_voxel(pred_voxels[i], mode = 'exact', thresh = .5)
-				print('----------------------')
-		num_batches += 1  
+        
+        if args.vis: 
+            for i in range(inp_voxels.shape[0]):    
+            
+                print ('Rendering low resolution input')
+                kal.visualize.show_voxel(inp_voxels[i], mode = 'exact', thresh = .5)
+                print ('Rendering high resolution target')
+                kal.visualize.show_voxel(tgt_voxels[i], mode = 'exact', thresh = .5)
+                print ('Rendering high resolution prediction')
+                kal.visualize.show_voxel(pred_voxels[i], mode = 'exact', thresh = .5)
+                print('----------------------')
+        num_batches += 1  
 iou_NN_epoch = iou_NN_epoch.item() / float(num_batches)
 print ('IoU for Nearest Neighbor baseline over validation set is {0}'.format(iou_NN_epoch))
 out_iou = iou_epoch.item() / float(num_batches)

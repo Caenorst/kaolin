@@ -23,37 +23,37 @@ from kaolin.rep import TriangleMesh
 
 @pytest.mark.parametrize('device', ['cpu', 'cuda'])
 def test_to_trianglemesh_to_pointcloud(device):
-	mesh = TriangleMesh.from_obj('tests/model.obj')
-	if device == 'cuda':
-		mesh.cuda()
-	
-	points, _ = kal.conversions.trianglemesh_to_pointcloud(mesh, 10)
-	assert (set(points.shape) == set([10, 3]))
-	points, _ = kal.conversions.trianglemesh_to_pointcloud(mesh, 10000)
-	assert (set(points.shape) == set([10000, 3]))
+    mesh = TriangleMesh.from_obj('tests/model.obj')
+    if device == 'cuda':
+        mesh.cuda()
+    
+    points, _ = kal.conversions.trianglemesh_to_pointcloud(mesh, 10)
+    assert (set(points.shape) == set([10, 3]))
+    points, _ = kal.conversions.trianglemesh_to_pointcloud(mesh, 10000)
+    assert (set(points.shape) == set([10000, 3]))
 
 
 @pytest.mark.parametrize('device', ['cpu', 'cuda'])
 def test_trianglemesh_to_voxelgrid(device):
-	mesh = TriangleMesh.from_obj('tests/model.obj')
-	if device == 'cuda':
-		mesh.cuda()
-	voxels = kal.conversions.trianglemesh_to_voxelgrid(mesh, 32,
-		normalize ='unit')
-	assert (set(voxels.shape) == set([32, 32, 32]))
-	voxels = kal.conversions.trianglemesh_to_voxelgrid(mesh, 64,
-		normalize ='unit')
-	assert (set(voxels.shape) == set([64, 64, 64]))
+    mesh = TriangleMesh.from_obj('tests/model.obj')
+    if device == 'cuda':
+        mesh.cuda()
+    voxels = kal.conversions.trianglemesh_to_voxelgrid(mesh, 32,
+        normalize ='unit')
+    assert (set(voxels.shape) == set([32, 32, 32]))
+    voxels = kal.conversions.trianglemesh_to_voxelgrid(mesh, 64,
+        normalize ='unit')
+    assert (set(voxels.shape) == set([64, 64, 64]))
 
 
 @pytest.mark.parametrize('device', ['cpu', 'cuda'])
 def test_trianglemesh_to_sdf(device):
-	mesh = TriangleMesh.from_obj('tests/model.obj')
-	if device == 'cuda':
-		mesh.cuda()
-	print(mesh.device)
-	sdf = kal.conversions.trianglemesh_to_sdf(mesh)
-	distances = sdf(torch.rand(100,3).to(device) -.5)
-	assert (set(distances.shape) == set([100]))
-	assert ((distances >0).sum()) > 0
-	assert ((distances <0).sum()) > 0
+    mesh = TriangleMesh.from_obj('tests/model.obj')
+    if device == 'cuda':
+        mesh.cuda()
+    print(mesh.device)
+    sdf = kal.conversions.trianglemesh_to_sdf(mesh)
+    distances = sdf(torch.rand(100,3).to(device) -.5)
+    assert (set(distances.shape) == set([100]))
+    assert ((distances >0).sum()) > 0
+    assert ((distances <0).sum()) > 0

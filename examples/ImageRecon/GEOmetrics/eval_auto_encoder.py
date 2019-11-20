@@ -38,9 +38,9 @@ args = parser.parse_args()
 
 # Data
 mesh_set = kal.datasets.ShapeNet.Surface_Meshes(root ='../../datasets/',categories =args.categories , \
-	resolution = 32, download = True, train = False, split = .7, mode = 'Tri' )
+    resolution = 32, download = True, train = False, split = .7, mode = 'Tri' )
 voxel_set = kal.datasets.ShapeNet.Voxels(root ='../../datasets/',categories =args.categories , \
-	download = True, train = False, resolutions=[32], split = .7 )
+    download = True, train = False, resolutions=[32], split = .7 )
 valid_set = kal.datasets.ShapeNet.Combination([mesh_set, voxel_set], root='../../datasets/')
 
 
@@ -57,40 +57,40 @@ num_items = 0
 
 encoder.eval(), decoder.eval()
 with torch.no_grad():
-	for i in tqdm(range(len(valid_set))): 
-		###############################
-		####### data creation #########
-		###############################
-		tgt_voxels = valid_set[i]['32'].to(args.device)
-		inp_verts = valid_set[i]['verts'].to(args.device)
-		inp_faces = valid_set[i]['faces'].to(args.device)
-		inp_adj = valid_set[i]['adj'].to(args.device)
-		
-		###############################
-		########## inference ##########
-		###############################
-		latent_encoding = encoder(inp_verts, inp_adj).unsqueeze(0)
-		pred_voxels = decoder(latent_encoding)[0]
+    for i in tqdm(range(len(valid_set))): 
+        ###############################
+        ####### data creation #########
+        ###############################
+        tgt_voxels = valid_set[i]['32'].to(args.device)
+        inp_verts = valid_set[i]['verts'].to(args.device)
+        inp_faces = valid_set[i]['faces'].to(args.device)
+        inp_adj = valid_set[i]['adj'].to(args.device)
+        
+        ###############################
+        ########## inference ##########
+        ###############################
+        latent_encoding = encoder(inp_verts, inp_adj).unsqueeze(0)
+        pred_voxels = decoder(latent_encoding)[0]
 
-		###############################
-		########## losses #############
-		###############################
+        ###############################
+        ########## losses #############
+        ###############################
 
-		iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels.contiguous())
+        iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels.contiguous())
 
-		if args.vis: 
-			tgt_mesh = kal.rep.TriangleMesh.from_tensors(inp_verts, inp_faces)
-			print ('Rendering Input Mesh')
-			tgt_mesh.show()
-			print ('Rendering Target Voxels')
-			kal.visualize.show_voxel(tgt_voxels, mode = 'exact', thresh = .5)
-			print ('Rendering Predicted Voxels')
-			kal.visualize.show_voxel(pred_voxels, mode = 'exact', thresh = .5)
-			print('----------------------')
-			num_items += 1
+        if args.vis: 
+            tgt_mesh = kal.rep.TriangleMesh.from_tensors(inp_verts, inp_faces)
+            print ('Rendering Input Mesh')
+            tgt_mesh.show()
+            print ('Rendering Target Voxels')
+            kal.visualize.show_voxel(tgt_voxels, mode = 'exact', thresh = .5)
+            print ('Rendering Predicted Voxels')
+            kal.visualize.show_voxel(pred_voxels, mode = 'exact', thresh = .5)
+            print('----------------------')
+            num_items += 1
 
-		loss_epoch += iou.item()
-		num_batches += 1.
+        loss_epoch += iou.item()
+        num_batches += 1.
 
 out_loss = loss_epoch / float(num_batches)
 print ('IoU over validation set is {0}'.format(out_loss))

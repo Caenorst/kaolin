@@ -39,11 +39,11 @@ args = parser.parse_args()
 
 # Data
 points_set_valid = kal.datasets.ShapeNet.Points(root ='../../datasets/',categories =args.categories , \
-	download = True, train = False, split = .7, num_points=5000 )
+    download = True, train = False, split = .7, num_points=5000 )
 images_set_valid = kal.datasets.ShapeNet.Images(root ='../../datasets/',categories =args.categories , \
-	download = True, train = False,  split = .7, views=1, transform= preprocess )
+    download = True, train = False,  split = .7, views=1, transform= preprocess )
 meshes_set_valid = kal.datasets.ShapeNet.Meshes(root ='../../datasets/', categories =args.categories , \
-	download = True, train = False,  split = .7)
+    download = True, train = False,  split = .7)
 valid_set = kal.datasets.ShapeNet.Combination([points_set_valid, images_set_valid, meshes_set_valid], root='../../datasets/')
 
 
@@ -58,7 +58,7 @@ mesh_updates = [G_Res_Net(mesh_update_kernels[i], hidden = 128, output_features 
 # Load saved weights
 encoder.load_state_dict(torch.load('log/{0}/best_encoder.pth'.format(args.expid)))
 for i,m in enumerate(mesh_updates):
-	m.load_state_dict(torch.load('log/{}/best_mesh_update_{}.pth'.format(args.expid, i)))
+    m.load_state_dict(torch.load('log/{}/best_mesh_update_{}.pth'.format(args.expid, i)))
 encoding_dims = [56, 28, 14, 7]
 
 loss_epoch = 0.
@@ -69,82 +69,82 @@ loss_fn = kal.metrics.point.chamfer_distance
 
 encoder.eval(), [m.eval() for m in mesh_updates]
 with torch.no_grad():
-	for data in tqdm(valid_set): 
-		# data creation
-		tgt_points = data['points'].to(args.device)
-		inp_images = data['imgs'].to(args.device).unsqueeze(0)
-		cam_mat = data['cam_mat'].to(args.device)
-		cam_pos = data['cam_pos'].to(args.device)
+    for data in tqdm(valid_set): 
+        # data creation
+        tgt_points = data['points'].to(args.device)
+        inp_images = data['imgs'].to(args.device).unsqueeze(0)
+        cam_mat = data['cam_mat'].to(args.device)
+        cam_pos = data['cam_pos'].to(args.device)
 
-		
-		###############################
-		########## inference ##########
-		###############################
-		img_features = encoder(inp_images)
-		
-		##### layer_1 ##### 
-		pool_indices = get_pooling_index(meshes['init'][0].vertices, cam_mat, cam_pos, encoding_dims)
-		projected_image_features = pooling(img_features, pool_indices)
-		full_vert_features = torch.cat((meshes['init'][0].vertices, projected_image_features), dim = 1)
-		
+        
+        ###############################
+        ########## inference ##########
+        ###############################
+        img_features = encoder(inp_images)
+        
+        ##### layer_1 ##### 
+        pool_indices = get_pooling_index(meshes['init'][0].vertices, cam_mat, cam_pos, encoding_dims)
+        projected_image_features = pooling(img_features, pool_indices)
+        full_vert_features = torch.cat((meshes['init'][0].vertices, projected_image_features), dim = 1)
+        
 
-		pred_verts, future_features = mesh_updates[0](full_vert_features, meshes['adjs'][0])
-		meshes['update'][0].vertices = pred_verts.clone()
+        pred_verts, future_features = mesh_updates[0](full_vert_features, meshes['adjs'][0])
+        meshes['update'][0].vertices = pred_verts.clone()
 
-		##### layer_2 ##### 
-		future_features = split(meshes, future_features, 0)
-		pool_indices = get_pooling_index(meshes['init'][1].vertices, cam_mat, cam_pos, encoding_dims)
-		projected_image_features = pooling(img_features, pool_indices)
-		full_vert_features = torch.cat((meshes['init'][1].vertices, projected_image_features, future_features), dim = 1)
-		
-		pred_verts, future_features = mesh_updates[1](full_vert_features, meshes['adjs'][1])
-		meshes['update'][1].vertices = pred_verts.clone()
+        ##### layer_2 ##### 
+        future_features = split(meshes, future_features, 0)
+        pool_indices = get_pooling_index(meshes['init'][1].vertices, cam_mat, cam_pos, encoding_dims)
+        projected_image_features = pooling(img_features, pool_indices)
+        full_vert_features = torch.cat((meshes['init'][1].vertices, projected_image_features, future_features), dim = 1)
+        
+        pred_verts, future_features = mesh_updates[1](full_vert_features, meshes['adjs'][1])
+        meshes['update'][1].vertices = pred_verts.clone()
 
-		##### layer_3 ##### 
-		future_features = split(meshes, future_features, 1)
-		pool_indices = get_pooling_index(meshes['init'][2].vertices, cam_mat, cam_pos, encoding_dims)
-		projected_image_features = pooling(img_features, pool_indices)
-		full_vert_features = torch.cat((meshes['init'][2].vertices, projected_image_features, future_features), dim = 1)
+        ##### layer_3 ##### 
+        future_features = split(meshes, future_features, 1)
+        pool_indices = get_pooling_index(meshes['init'][2].vertices, cam_mat, cam_pos, encoding_dims)
+        projected_image_features = pooling(img_features, pool_indices)
+        full_vert_features = torch.cat((meshes['init'][2].vertices, projected_image_features, future_features), dim = 1)
 
-		pred_verts, future_features = mesh_updates[2](full_vert_features, meshes['adjs'][2])
-		meshes['update'][2].vertices = pred_verts.clone()
-		
+        pred_verts, future_features = mesh_updates[2](full_vert_features, meshes['adjs'][2])
+        meshes['update'][2].vertices = pred_verts.clone()
+        
 
-		 	
-		meshes['update'][2].vertices = pred_verts.clone()
-		pred_points, _ = meshes['update'][2].sample(5000)
-	
-		loss = 3000 * kal.metrics.point.chamfer_distance(pred_points, tgt_points)
+            
+        meshes['update'][2].vertices = pred_verts.clone()
+        pred_points, _ = meshes['update'][2].sample(5000)
+    
+        loss = 3000 * kal.metrics.point.chamfer_distance(pred_points, tgt_points)
 
-		if args.vis: 
-			tgt_mesh = meshes_set_valid[num_items]
-			tgt_verts = tgt_mesh['verts']
-			tgt_faces = tgt_mesh['faces']
-			tgt_mesh = kal.rep.TriangleMesh.from_tensors(tgt_verts, tgt_faces)
+        if args.vis: 
+            tgt_mesh = meshes_set_valid[num_items]
+            tgt_verts = tgt_mesh['verts']
+            tgt_faces = tgt_mesh['faces']
+            tgt_mesh = kal.rep.TriangleMesh.from_tensors(tgt_verts, tgt_faces)
 
-			print ('Displaying input image')
-			img = inp_images[0].data.cpu().numpy().transpose((1, 2, 0))
-			img = (img*255.).astype(np.uint8)
-			Image.fromarray(img).show()
-			print ('Rendering Target Mesh')
-			kal.visualize.show_mesh(tgt_mesh)
-			print ('Rendering Predicted Mesh')
-			kal.visualize.show_mesh(meshes['update'][2])
-			print('----------------------')
-			num_items += 1
+            print ('Displaying input image')
+            img = inp_images[0].data.cpu().numpy().transpose((1, 2, 0))
+            img = (img*255.).astype(np.uint8)
+            Image.fromarray(img).show()
+            print ('Rendering Target Mesh')
+            kal.visualize.show_mesh(tgt_mesh)
+            print ('Rendering Predicted Mesh')
+            kal.visualize.show_mesh(meshes['update'][2])
+            print('----------------------')
+            num_items += 1
 
-		if args.f_score: 
-			#### compute f score #### 
-			f_score = kal.metrics.point.f_score(tgt_points, pred_points, extend = False)
-			f_epoch += (f_score  / float(args.batchsize)).item()
+        if args.f_score: 
+            #### compute f score #### 
+            f_score = kal.metrics.point.f_score(tgt_points, pred_points, extend = False)
+            f_epoch += (f_score  / float(args.batchsize)).item()
 
-		loss_epoch += loss.item()
-		
-		
-		num_batches += 1.
+        loss_epoch += loss.item()
+        
+        
+        num_batches += 1.
 
 out_loss = loss_epoch / float(num_batches)
 print ('Loss over validation set is {0}'.format(out_loss))
 if args.f_score: 
-	out_f = f_epoch / float(num_batches)
-	print ('F-score over validation set is {0}'.format(out_f))
+    out_f = f_epoch / float(num_batches)
+    print ('F-score over validation set is {0}'.format(out_f))

@@ -44,7 +44,7 @@ parser.add_argument('-val-every', type=int, default=5, help='Validation frequenc
 parser.add_argument('-print-every', type=int, default=20, help='Print frequency (batches).')
 parser.add_argument('-logdir', type=str, default='log', help='Directory to log data to.')
 parser.add_argument('-save-model', action='store_true', help='Saves the model and a snapshot \
-	of the optimizer state.')
+    of the optimizer state.')
 args = parser.parse_args()
 
 
@@ -53,11 +53,11 @@ args = parser.parse_args()
 Dataset
 """
 sdf_set = kal.datasets.ShapeNet.SDF_Points(root ='../../datasets/',categories =args.categories , \
-	download = True, train = True, split = .7, num_points=3000 )
+    download = True, train = True, split = .7, num_points=3000 )
 point_set = kal.datasets.ShapeNet.Points(root ='../../datasets/',categories =args.categories , \
-	download = True, train = True, split = .7, num_points=3000 )
+    download = True, train = True, split = .7, num_points=3000 )
 images_set = kal.datasets.ShapeNet.Images(root ='../../datasets/',categories =args.categories , \
-	download = True, train = True,  split = .7, views=23, transform= preprocess )
+    download = True, train = True,  split = .7, views=23, transform= preprocess )
 train_set = kal.datasets.ShapeNet.Combination([sdf_set, images_set, point_set], root='../../kaolin/datasets/')
 
 dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True, num_workers=8)
@@ -66,9 +66,9 @@ dataloader_train = DataLoader(train_set, batch_size=args.batchsize, shuffle=True
 
 
 images_set_valid = kal.datasets.ShapeNet.Images(root ='../../datasets/',categories =args.categories , \
-	download = True, train = False,  split = .7, views=1, transform= preprocess )
+    download = True, train = False,  split = .7, views=1, transform= preprocess )
 dataloader_val = DataLoader(images_set_valid, batch_size=args.batchsize, shuffle=False, 
-	num_workers=8)
+    num_workers=8)
 
 
 
@@ -96,163 +96,163 @@ renderer = Dib_Renderer(137, 137, mode = 'VertexColor')
 # Create log directory, if it doesn't already exist
 args.logdir = os.path.join(args.logdir, args.expid)
 if not os.path.isdir(args.logdir):
-	os.makedirs(args.logdir)
-	print('Created dir:', args.logdir)
+    os.makedirs(args.logdir)
+    print('Created dir:', args.logdir)
 
 # Log all commandline args
 with open(os.path.join(args.logdir, 'args.txt'), 'w') as f:
-	json.dump(args.__dict__, f, indent=2)
+    json.dump(args.__dict__, f, indent=2)
 
 class Engine(object):
 
 
-	def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
-		self.cur_epoch = cur_epoch
-		self.train_loss = []
-		self.val_loss = []
-		self.bestval = 1000.
+    def __init__(self,  cur_epoch=0, print_every=1, validate_every=1):
+        self.cur_epoch = cur_epoch
+        self.train_loss = []
+        self.val_loss = []
+        self.bestval = 1000.
 
-	def train(self):
-		loss_epoch = 0.
-		num_batches = 0
+    def train(self):
+        loss_epoch = 0.
+        num_batches = 0
 
-		model.train()
-		# Train loop
-		for i, data in enumerate(tqdm(dataloader_train), 0):
-			optimizer.zero_grad()
-			
-			# data creation
-			tgt_points = data['points'].cuda()
-			inp_images = data['imgs'].cuda()
-			image_gt = inp_images.permute(0,2,3,1)[:,:,:,:3]
-			alhpa_gt = inp_images.permute(0,2,3,1)[:,:,:,3:]
-			cam_mat = data['cam_mat'].cuda()
-			cam_pos = data['cam_pos'].cuda()
+        model.train()
+        # Train loop
+        for i, data in enumerate(tqdm(dataloader_train), 0):
+            optimizer.zero_grad()
+            
+            # data creation
+            tgt_points = data['points'].cuda()
+            inp_images = data['imgs'].cuda()
+            image_gt = inp_images.permute(0,2,3,1)[:,:,:,:3]
+            alhpa_gt = inp_images.permute(0,2,3,1)[:,:,:,3:]
+            cam_mat = data['cam_mat'].cuda()
+            cam_pos = data['cam_pos'].cuda()
 
-			# set viewing parameters 
-			renderer.camera_params = [cam_mat, cam_pos, cam_proj]
-		
-			# predict mesh properties
-			delta_verts, colours = model(inp_images)
-			pred_verts = initial_verts + delta_verts
-		
-			# render image
-			image_pred, alpha_pred, face_norms = renderer.forward(points=[(pred_verts*.57), mesh.faces], colors=[colours])
-			
-			# colour loss
-			img_loss = ((image_pred - image_gt)**2).mean()
+            # set viewing parameters 
+            renderer.camera_params = [cam_mat, cam_pos, cam_proj]
+        
+            # predict mesh properties
+            delta_verts, colours = model(inp_images)
+            pred_verts = initial_verts + delta_verts
+        
+            # render image
+            image_pred, alpha_pred, face_norms = renderer.forward(points=[(pred_verts*.57), mesh.faces], colors=[colours])
+            
+            # colour loss
+            img_loss = ((image_pred - image_gt)**2).mean()
 
-			# alpha loss 
-			alpha_loss = ((alpha_pred - alhpa_gt)**2).mean()
+            # alpha loss 
+            alpha_loss = ((alpha_pred - alhpa_gt)**2).mean()
 
-			# mesh loss
-			lap_loss = 0.
-			flat_loss = 0.
-			for verts, tgt, norms in zip(pred_verts, tgt_points, face_norms): 	
-				lap_loss += .1*loss_lap(mesh) / float(args.batchsize)
-				flat_loss += .0001 *loss_flat(mesh, norms) / float(args.batchsize)
-
-
-
-			loss =  img_loss + alpha_loss + lap_loss + flat_loss 
-			loss.backward()
-			loss_epoch += float(loss.item())
-
-			# logging
-			num_batches += 1
-			if i % args.print_every == 0:
-				message = f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, Img: {(img_loss.item()):4.3f}, '
-				message = message + f' Alpha: {(alpha_loss.item()):3.3f}'
-				message = message + f' Flat: {(flat_loss.item()):3.3f}, Lap: {(lap_loss.item()):3.3f} '
-				
-				tqdm.write(message)
-			optimizer.step()
-		
-		
-		loss_epoch = loss_epoch / num_batches
-		self.train_loss.append(loss_epoch)
-		self.cur_epoch += 1
-
-		
-		
-	def validate(self):
-		model.eval()
-		with torch.no_grad():	
-			num_batches = 0
-			loss_epoch = 0.
-
-			# Validation loop
-			for i, data in enumerate(tqdm(dataloader_val), 0):
-
-				# data creation
-				inp_images = data['imgs'].cuda()
-				image_gt = inp_images.permute(0,2,3,1)
-				cam_mat = data['cam_mat'].cuda()
-				cam_pos = data['cam_pos'].cuda()
+            # mesh loss
+            lap_loss = 0.
+            flat_loss = 0.
+            for verts, tgt, norms in zip(pred_verts, tgt_points, face_norms):   
+                lap_loss += .1*loss_lap(mesh) / float(args.batchsize)
+                flat_loss += .0001 *loss_flat(mesh, norms) / float(args.batchsize)
 
 
-				# set viewing parameters 
-				renderer.camera_params = [cam_mat, cam_pos, cam_proj]
-			
-				# predict mesh properties
-				delta_verts, colours = model(inp_images)
-				pred_verts = initial_verts + delta_verts
-			
-				# render image
-				image_pred, alpha_pred, _ = renderer.forward(points=[(pred_verts*.57 ), mesh.faces], colors=[colours])
-				
-				full_pred = torch.cat((image_pred, alpha_pred), dim = -1)
-	
-				# colour loss
-				img_loss = ((full_pred - image_gt)**2).mean()
-				loss_epoch += float(img_loss.item())
 
-				# logging
-				num_batches += 1
-				if i % args.print_every == 0:
-					out_loss = loss_epoch / float(num_batches)
-					message = f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, loss: {(out_loss):4.3f}'
-					tqdm.write(message)
-						
-			out_loss = loss_epoch / float(num_batches)
-			tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss:4.5f}')
+            loss =  img_loss + alpha_loss + lap_loss + flat_loss 
+            loss.backward()
+            loss_epoch += float(loss.item())
 
-			self.val_loss.append(out_loss)
+            # logging
+            num_batches += 1
+            if i % args.print_every == 0:
+                message = f'[TRAIN] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, Img: {(img_loss.item()):4.3f}, '
+                message = message + f' Alpha: {(alpha_loss.item()):3.3f}'
+                message = message + f' Flat: {(flat_loss.item()):3.3f}, Lap: {(lap_loss.item()):3.3f} '
+                
+                tqdm.write(message)
+            optimizer.step()
+        
+        
+        loss_epoch = loss_epoch / num_batches
+        self.train_loss.append(loss_epoch)
+        self.cur_epoch += 1
 
-	def save(self):
+        
+        
+    def validate(self):
+        model.eval()
+        with torch.no_grad():   
+            num_batches = 0
+            loss_epoch = 0.
 
-		save_best = False
-		if self.val_loss[-1] <= self.bestval:
-			self.bestval = self.val_loss[-1]
-			save_best = True
-		
-		# Create a dictionary of all data to save
-		log_table = {
-			'epoch': self.cur_epoch,
-			'bestval': self.bestval,
-			'train_loss': self.train_loss,
-			'val_loss': self.val_loss
-		}
+            # Validation loop
+            for i, data in enumerate(tqdm(dataloader_val), 0):
 
-		# Save the recent model/optimizer states
-		torch.save(model.state_dict(), os.path.join(args.logdir, 'recent.pth'))
-		torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'recent_optim.pth'))
-		# Log other data corresponding to the recent model
-		with open(os.path.join(args.logdir, 'recent.log'), 'w') as f:
-			f.write(json.dumps(log_table))
+                # data creation
+                inp_images = data['imgs'].cuda()
+                image_gt = inp_images.permute(0,2,3,1)
+                cam_mat = data['cam_mat'].cuda()
+                cam_pos = data['cam_pos'].cuda()
 
-		tqdm.write('====== Saved recent model ======>')
-		
-		if save_best:
-			torch.save(model.state_dict(), os.path.join(args.logdir, 'best.pth'))
-			torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
-			tqdm.write('====== Overwrote best model ======>')
-			
-	
+
+                # set viewing parameters 
+                renderer.camera_params = [cam_mat, cam_pos, cam_proj]
+            
+                # predict mesh properties
+                delta_verts, colours = model(inp_images)
+                pred_verts = initial_verts + delta_verts
+            
+                # render image
+                image_pred, alpha_pred, _ = renderer.forward(points=[(pred_verts*.57 ), mesh.faces], colors=[colours])
+                
+                full_pred = torch.cat((image_pred, alpha_pred), dim = -1)
+    
+                # colour loss
+                img_loss = ((full_pred - image_gt)**2).mean()
+                loss_epoch += float(img_loss.item())
+
+                # logging
+                num_batches += 1
+                if i % args.print_every == 0:
+                    out_loss = loss_epoch / float(num_batches)
+                    message = f'[VAL] Epoch {self.cur_epoch:03d}, Batch {i:03d}:, loss: {(out_loss):4.3f}'
+                    tqdm.write(message)
+                        
+            out_loss = loss_epoch / float(num_batches)
+            tqdm.write(f'[VAL Total] Epoch {self.cur_epoch:03d}, Batch {i:03d}: loss: {out_loss:4.5f}')
+
+            self.val_loss.append(out_loss)
+
+    def save(self):
+
+        save_best = False
+        if self.val_loss[-1] <= self.bestval:
+            self.bestval = self.val_loss[-1]
+            save_best = True
+        
+        # Create a dictionary of all data to save
+        log_table = {
+            'epoch': self.cur_epoch,
+            'bestval': self.bestval,
+            'train_loss': self.train_loss,
+            'val_loss': self.val_loss
+        }
+
+        # Save the recent model/optimizer states
+        torch.save(model.state_dict(), os.path.join(args.logdir, 'recent.pth'))
+        torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'recent_optim.pth'))
+        # Log other data corresponding to the recent model
+        with open(os.path.join(args.logdir, 'recent.log'), 'w') as f:
+            f.write(json.dumps(log_table))
+
+        tqdm.write('====== Saved recent model ======>')
+        
+        if save_best:
+            torch.save(model.state_dict(), os.path.join(args.logdir, 'best.pth'))
+            torch.save(optimizer.state_dict(), os.path.join(args.logdir, 'best_optim.pth'))
+            tqdm.write('====== Overwrote best model ======>')
+            
+    
 trainer = Engine()
 
 for epoch in range(args.epochs): 
-	trainer.train()
-	if epoch %4 == 0:
-		trainer.validate()
-		trainer.save()
+    trainer.train()
+    if epoch %4 == 0:
+        trainer.validate()
+        trainer.save()

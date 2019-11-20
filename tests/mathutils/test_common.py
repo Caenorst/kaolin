@@ -27,27 +27,27 @@ from kaolin.testing import tensor_to_gradcheck_var
 
 
 def test_pi():
-	assert_allclose(pi, 3.14159265)
+    assert_allclose(pi, 3.14159265)
 
 
 @pytest.mark.parametrize('shape', [(1,2,3), (2,1,4), (1,1,1)])
 def test_rad2deg(shape, device='cpu'):
-	x_rad = pi * torch.rand(shape).to(device)
-	x_deg = kal.mathutils.rad2deg(x_rad)
-	x_deg_to_rad = kal.mathutils.deg2rad(x_deg)
-	assert_allclose(x_rad, x_deg_to_rad, atol=1e-8, rtol=1e-5)
+    x_rad = pi * torch.rand(shape).to(device)
+    x_deg = kal.mathutils.rad2deg(x_rad)
+    x_deg_to_rad = kal.mathutils.deg2rad(x_deg)
+    assert_allclose(x_rad, x_deg_to_rad, atol=1e-8, rtol=1e-5)
 
-	assert gradcheck(kal.mathutils.rad2deg, (tensor_to_gradcheck_var(x_rad)), 
-		raise_exception=True)
+    assert gradcheck(kal.mathutils.rad2deg, (tensor_to_gradcheck_var(x_rad)), 
+        raise_exception=True)
 
 
 @pytest.mark.parametrize('shape', [(2,3,1), (1,3,2), (4,2,18)])
 def test_deg2rad(shape, device='cpu'):
-	x_deg = 180. * torch.rand(shape)
-	x_deg = x_deg.to(torch.device(device))
-	x_rad = kal.mathutils.deg2rad(x_deg)
-	x_rad_to_deg = kal.mathutils.rad2deg(x_rad)
-	assert_allclose(x_deg, x_rad_to_deg, atol=1e-8, rtol=1e-5)
+    x_deg = 180. * torch.rand(shape)
+    x_deg = x_deg.to(torch.device(device))
+    x_rad = kal.mathutils.deg2rad(x_deg)
+    x_rad_to_deg = kal.mathutils.rad2deg(x_rad)
+    assert_allclose(x_deg, x_rad_to_deg, atol=1e-8, rtol=1e-5)
 
-	assert gradcheck(kal.mathutils.deg2rad, (tensor_to_gradcheck_var(x_deg)), 
-		raise_exception=True)
+    assert gradcheck(kal.mathutils.deg2rad, (tensor_to_gradcheck_var(x_deg)), 
+        raise_exception=True)

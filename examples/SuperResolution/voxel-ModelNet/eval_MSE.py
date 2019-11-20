@@ -34,32 +34,32 @@ num_batches = 0
 
 model.eval()
 with torch.no_grad():
-	for data in tqdm(dataloader_val):
-		tgt = data['data'].to(args.device)
-		inp = down_sample(tgt)
+    for data in tqdm(dataloader_val):
+        tgt = data['data'].to(args.device)
+        inp = down_sample(tgt)
 
-		# inference
-		pred = model(inp)
+        # inference
+        pred = model(inp)
 
-		# losses
-		iou = kal.metrics.voxel.iou(pred.contiguous(), tgt)
-		iou_epoch += iou
+        # losses
+        iou = kal.metrics.voxel.iou(pred.contiguous(), tgt)
+        iou_epoch += iou
 
-		NN_pred = up_sample(inp)
-		iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt)
-		iou_NN_epoch += iou_NN
+        NN_pred = up_sample(inp)
+        iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt)
+        iou_NN_epoch += iou_NN
 
-		num_batches += 1.
+        num_batches += 1.
 
-		if args.vis:
-			for i in range(pred.shape[0]):
-				print ('Rendering low resolution input')
-				kal.visualize.show_voxel(inp[i,0], mode = 'exact', thresh = .5)
-				print ('Rendering high resolution target')
-				kal.visualize.show_voxel(tgt[i], mode = 'exact', thresh = .5)
-				print ('Rendering high resolution prediction')
-				kal.visualize.show_voxel(pred[i], mode = 'exact', thresh = .5)
-				print('----------------------')
+        if args.vis:
+            for i in range(pred.shape[0]):
+                print ('Rendering low resolution input')
+                kal.visualize.show_voxel(inp[i,0], mode = 'exact', thresh = .5)
+                print ('Rendering high resolution target')
+                kal.visualize.show_voxel(tgt[i], mode = 'exact', thresh = .5)
+                print ('Rendering high resolution prediction')
+                kal.visualize.show_voxel(pred[i], mode = 'exact', thresh = .5)
+                print('----------------------')
 
 out_iou_NN = iou_NN_epoch.item() / float(num_batches)
 print ('Nearest Neighbor Baseline IoU over validation set is {0}'.format(out_iou_NN))

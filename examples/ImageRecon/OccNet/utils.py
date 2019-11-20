@@ -46,32 +46,32 @@ def get_prior_z(cfg, device, **kwargs):
 
 
 def occ_function(model,code):
-	z = torch.zeros(1, 0)
+    z = torch.zeros(1, 0)
 
-	def eval_query(query):
-		pred_occ = model.decode(query.unsqueeze(0), z, code.unsqueeze(0) ).logits[0]
+    def eval_query(query):
+        pred_occ = model.decode(query.unsqueeze(0), z, code.unsqueeze(0) ).logits[0]
          # values less then .2 are sent to 1 and above(occupied ) are set to 0 -> part fo surface 
-		values = pred_occ < .2
-		
+        values = pred_occ < .2
+        
 
-		return values
+        return values
 
-		
-	return eval_query 
+        
+    return eval_query 
 
 
 def collate_fn(data): 
-	new_data = {}
-	for k in data[0].keys():
-		
-		if k in ['occ_points','occ_values', 'imgs', 'points']:
-			new_info = tuple(d[k] for d in data)
-			new_info = torch.stack(new_info, 0)
-		else: 
-			new_info = tuple(d[k] for d in data)
+    new_data = {}
+    for k in data[0].keys():
+        
+        if k in ['occ_points','occ_values', 'imgs', 'points']:
+            new_info = tuple(d[k] for d in data)
+            new_info = torch.stack(new_info, 0)
+        else: 
+            new_info = tuple(d[k] for d in data)
 
-		new_data[k] = new_info
-	return new_data
+        new_data[k] = new_info
+    return new_data
 
 
 def extract_mesh(occ_hat, model, c=None, stats_dict=dict()):

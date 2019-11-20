@@ -38,9 +38,9 @@ args = parser.parse_args()
 
 # Data
 valid_set = ModelNet_ODMS(root ='../../datasets/',categories = args.categories, \
-	download = True, train = False)
+    download = True, train = False)
 dataloader_val = DataLoader(valid_set, batch_size=args.batchsize, shuffle=False, \
-	num_workers=8)
+    num_workers=8)
 
 # Model
 model = upscale(30,15)
@@ -55,42 +55,42 @@ num_batches = 0
 
 model.eval()
 with torch.no_grad():
-	for data in tqdm(dataloader_val): 
-		
-		tgt_odms = data['odms'].to(args.device)
-		tgt_voxels = data['voxels'].to(args.device)
-		inp_voxels = down_sample(tgt_voxels)
-		inp_odms = []
-		for voxel in inp_voxels: 
-			inp_odms.append(kal.rep.voxel.extract_odms(voxel).unsqueeze(0)) 
-		inp_odms = torch.cat(inp_odms)
+    for data in tqdm(dataloader_val): 
+        
+        tgt_odms = data['odms'].to(args.device)
+        tgt_voxels = data['voxels'].to(args.device)
+        inp_voxels = down_sample(tgt_voxels)
+        inp_odms = []
+        for voxel in inp_voxels: 
+            inp_odms.append(kal.rep.voxel.extract_odms(voxel).unsqueeze(0)) 
+        inp_odms = torch.cat(inp_odms)
 
-		pred_odms = model(inp_odms)*30
+        pred_odms = model(inp_odms)*30
 
-		NN_pred = up_sample(inp_voxels)
-		iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt_voxels)
-		iou_NN_epoch += iou_NN
+        NN_pred = up_sample(inp_voxels)
+        iou_NN = kal.metrics.voxel.iou(NN_pred.contiguous(), tgt_voxels)
+        iou_NN_epoch += iou_NN
 
-		pred_odms = pred_odms.int()
-		pred_voxels = []
-		for odms, NN_voxel in zip(pred_odms, NN_pred): 
-			pred_voxels.append(kal.rep.voxel.project_odms(odms, voxel= NN_voxel, votes = 2).unsqueeze(0))
-		pred_voxels = torch.cat(pred_voxels)
-		iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
-		iou_epoch += iou
+        pred_odms = pred_odms.int()
+        pred_voxels = []
+        for odms, NN_voxel in zip(pred_odms, NN_pred): 
+            pred_voxels.append(kal.rep.voxel.project_odms(odms, voxel= NN_voxel, votes = 2).unsqueeze(0))
+        pred_voxels = torch.cat(pred_voxels)
+        iou = kal.metrics.voxel.iou(pred_voxels.contiguous(), tgt_voxels)
+        iou_epoch += iou
 
-		
+        
 
-		num_batches += 1
-		if args.vis: 
-			for i in range(inp_voxels.shape[0]):	
-				print ('Rendering low resolution input')
-				kal.visualize.show_voxel(inp_voxels[i], mode = 'exact', thresh = .5)
-				print ('Rendering high resolution target')
-				kal.visualize.show_voxel(tgt_voxels[i], mode = 'exact', thresh = .5)
-				print ('Rendering high resolution prediction')
-				kal.visualize.show_voxel(pred_voxels[i], mode = 'exact', thresh = .5)
-				print('----------------------')
+        num_batches += 1
+        if args.vis: 
+            for i in range(inp_voxels.shape[0]):    
+                print ('Rendering low resolution input')
+                kal.visualize.show_voxel(inp_voxels[i], mode = 'exact', thresh = .5)
+                print ('Rendering high resolution target')
+                kal.visualize.show_voxel(tgt_voxels[i], mode = 'exact', thresh = .5)
+                print ('Rendering high resolution prediction')
+                kal.visualize.show_voxel(pred_voxels[i], mode = 'exact', thresh = .5)
+                print('----------------------')
 iou_NN_epoch = iou_NN_epoch.item() / float(num_batches)
 print ('IoU for Nearest Neighbor baseline over validation set is {0}'.format(iou_NN_epoch))
 out_iou = iou_epoch.item() / float(num_batches)

@@ -21,5 +21,5 @@ import kaolin
 
 @pytest.mark.parametrize('batchsize, expected', [(1,1), (2,2), (4,4), (8,8)])
 def test_hello(batchsize, expected):
-	a = torch.Tensor(batchsize, 20, 30)
-	assert a.shape[0] == expected
+    a = torch.Tensor(batchsize, 20, 30)
+    assert a.shape[0] == expected

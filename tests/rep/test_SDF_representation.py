@@ -54,15 +54,15 @@ def test_check_sign(device):
 
 # if __name__ == '__main__':
 
-# 	mesh = TriangleMesh.from_obj('tests/model.obj')
-# 	mesh.cuda()
-# 	points = torch.rand(1000, 3).cuda() - .5
-# 	sign_fast = kal.rep.SDF.check_sign_fast(mesh, points)
+#   mesh = TriangleMesh.from_obj('tests/model.obj')
+#   mesh.cuda()
+#   points = torch.rand(1000, 3).cuda() - .5
+#   sign_fast = kal.rep.SDF.check_sign_fast(mesh, points)
 
-# 	mesh = TriangleMesh.from_obj('tests/model.obj')
-# 	mesh.cuda()
-# 	sign = kal.rep.SDF.check_sign(mesh, points)
-# 	import numpy as np
-# 	sign = torch.from_numpy(np.asarray(sign)).cuda()
+#   mesh = TriangleMesh.from_obj('tests/model.obj')
+#   mesh.cuda()
+#   sign = kal.rep.SDF.check_sign(mesh, points)
+#   import numpy as np
+#   sign = torch.from_numpy(np.asarray(sign)).cuda()
     
-# 	print((sign == sign_fast).float().sum())
+#   print((sign == sign_fast).float().sum())

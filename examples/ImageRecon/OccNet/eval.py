@@ -41,13 +41,13 @@ args = parser.parse_args()
 
 # Data
 images_set = kal.datasets.ShapeNet.Images(root ='../../datasets/',categories =args.categories , \
-	download = True, train = False,  split = .7, views=1)
+    download = True, train = False,  split = .7, views=1)
 points_set_valid = kal.datasets.ShapeNet.Points(root ='../../datasets/',categories =args.categories , \
-	download = True, train = False, split = .7, num_points=5000 )
+    download = True, train = False, split = .7, num_points=5000 )
 sdf_set = kal.datasets.ShapeNet.SDF_Points(root= '../../datasets/', categories=args.categories, \
-	download=True, train = False, split = .7, num_points = 100000, occ = True)
+    download=True, train = False, split = .7, num_points = 100000, occ = True)
 data_set_mesh = kal.datasets.ShapeNet.Meshes(root= '../../datasets/', \
-	categories=args.categories, download=True, train = False, split = .7)
+    categories=args.categories, download=True, train = False, split = .7)
 
 
 valid_set = kal.datasets.ShapeNet.Combination([sdf_set, images_set, data_set_mesh, points_set_valid], root='../../datasets/')
@@ -71,76 +71,76 @@ num_items = 0
 
 
 with torch.no_grad():
-	model.encoder.eval()
-	model.decoder.eval() 
-	for data in tqdm(dataloader_val):
-		imgs = data['imgs'][:,:3].to(args.device)
-		sdf_points = data['occ_points'].to(args.device)
-		surface_points = data['points'].to(args.device)
-		gt_occ = data['occ_values'].to(args.device)
+    model.encoder.eval()
+    model.decoder.eval() 
+    for data in tqdm(dataloader_val):
+        imgs = data['imgs'][:,:3].to(args.device)
+        sdf_points = data['occ_points'].to(args.device)
+        surface_points = data['points'].to(args.device)
+        gt_occ = data['occ_values'].to(args.device)
 
 
-		
-		encoding = model.encode_inputs(imgs)
-		pred_occ = model.decode(sdf_points, torch.zeros(args.batch_size, 0), encoding ).logits
+        
+        encoding = model.encode_inputs(imgs)
+        pred_occ = model.decode(sdf_points, torch.zeros(args.batch_size, 0), encoding ).logits
 
-		i = 0 
-		for sdf_point, gt_oc, pred_oc, gt_surf, code in zip(sdf_points, gt_occ, pred_occ, surface_points, encoding):
-			#### compute iou ####
-			iou_epoch += float((kal.metrics.point.iou(gt_oc, pred_oc, thresh=.2) / \
-				float(gt_occ.shape[0])).item())
-			
-			if args.f_score or args.vis:
-				
-				# extract mesh from sdf 
-				sdf = kal.rep.SDF(occ_function(model, code))
-				voxelization = kal.conversion.SDF.to_voxel(sdf)
-				verts, faces = extract_mesh( voxelization, model)\
-				# algin new mesh to positions and scale of predicted occupancy
-				occ_points = sdf_point[pred_oc >= .2]
-				verts = kal.rep.point.re_align(occ_points, verts.clone())
-				mesh = kal.rep.TriangleMesh.from_tensors(verts, faces)
-				if verts.shape[0] == 0: # if mesh is empty count as 0 f-score
-					continue 
+        i = 0 
+        for sdf_point, gt_oc, pred_oc, gt_surf, code in zip(sdf_points, gt_occ, pred_occ, surface_points, encoding):
+            #### compute iou ####
+            iou_epoch += float((kal.metrics.point.iou(gt_oc, pred_oc, thresh=.2) / \
+                float(gt_occ.shape[0])).item())
+            
+            if args.f_score or args.vis:
+                
+                # extract mesh from sdf 
+                sdf = kal.rep.SDF(occ_function(model, code))
+                voxelization = kal.conversion.SDF.to_voxel(sdf)
+                verts, faces = extract_mesh( voxelization, model)\
+                # algin new mesh to positions and scale of predicted occupancy
+                occ_points = sdf_point[pred_oc >= .2]
+                verts = kal.rep.point.re_align(occ_points, verts.clone())
+                mesh = kal.rep.TriangleMesh.from_tensors(verts, faces)
+                if verts.shape[0] == 0: # if mesh is empty count as 0 f-score
+                    continue 
 
-				if args.vis: 
+                if args.vis: 
 
-					tgt_verts = data['verts'][i]
-					tgt_faces = data['faces'][i]
-					tgt_mesh = kal.rep.TriangleMesh.from_tensors(tgt_verts, tgt_faces)
+                    tgt_verts = data['verts'][i]
+                    tgt_faces = data['faces'][i]
+                    tgt_mesh = kal.rep.TriangleMesh.from_tensors(tgt_verts, tgt_faces)
 
-					print ('Displaying input image')
-					img = imgs[i].data.cpu().numpy().transpose((2, 1, 0)) * 255
-					img = (img).astype(np.uint8)
-					Image.fromarray(img).show()
-					print ('Rendering Target Mesh')
-					kal.visualize.show_mesh(tgt_mesh)
-					print ('Rendering Predicted Mesh')
-					mesh.show()
-					print('----------------------')
-					num_items += 1
+                    print ('Displaying input image')
+                    img = imgs[i].data.cpu().numpy().transpose((2, 1, 0)) * 255
+                    img = (img).astype(np.uint8)
+                    Image.fromarray(img).show()
+                    print ('Rendering Target Mesh')
+                    kal.visualize.show_mesh(tgt_mesh)
+                    print ('Rendering Predicted Mesh')
+                    mesh.show()
+                    print('----------------------')
+                    num_items += 1
 
-				if args.f_score:
-					#### compute f score #### 
-					pred_surf,_ = mesh.sample(5000)
-					f_score = kal.metrics.point.f_score(gt_surf, pred_surf, extend = False)
-					f_epoch += (f_score  / float(gt_occ.shape[0])).item()
-			i+= 1		
+                if args.f_score:
+                    #### compute f score #### 
+                    pred_surf,_ = mesh.sample(5000)
+                    f_score = kal.metrics.point.f_score(gt_surf, pred_surf, extend = False)
+                    f_epoch += (f_score  / float(gt_occ.shape[0])).item()
+            i+= 1       
 
-		
-		num_batches += 1.
+        
+        num_batches += 1.
 
 out_iou = iou_epoch / float(num_batches)
 print ('IoU over validation set is {0}'.format(out_iou))
 if args.f_score: 
-	out_f = f_epoch / float(num_batches)
-	print ('F-score over validation set is {0}'.format(out_f))
+    out_f = f_epoch / float(num_batches)
+    print ('F-score over validation set is {0}'.format(out_f))
 
 
 
  
 
 
-	
+    
 
-	
+    

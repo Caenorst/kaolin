@@ -35,14 +35,14 @@ ext_modules=[
     ]
 
 if __name__ == '__main__':
-	print(find_packages(exclude=( 'test')))
-	setup(
-	    description='PyTorch implementation of "Dib-renderer"',
-	    version='1.0.0',
-	    name='graphics',
-	    packages=find_packages(exclude=( 'test')),
-	    zip_safe=True,
-	    install_requires=INSTALL_REQUIREMENTS,
-   		ext_modules=ext_modules,
+    print(find_packages(exclude=( 'test')))
+    setup(
+        description='PyTorch implementation of "Dib-renderer"',
+        version='1.0.0',
+        name='graphics',
+        packages=find_packages(exclude=( 'test')),
+        zip_safe=True,
+        install_requires=INSTALL_REQUIREMENTS,
+        ext_modules=ext_modules,
         cmdclass = {'build_ext': BuildExtension}   
-	)
+    )

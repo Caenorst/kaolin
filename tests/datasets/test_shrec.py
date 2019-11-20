@@ -26,11 +26,11 @@ from torch.utils.data import DataLoader
 # Tests below can only be run is a ShapeNet dataset is available
 
 # def test_SHREC16(): 
-	
-# 	shreck = kal.datasets.SHREC16(root = 'tests/datasets_eval/shrec_16/', categories = ['alien', 'ants'], mode = 'train')
-# 	for obj in shreck: 
-# 		assert obj['verts'].shape[0] > 0  
-# 		assert obj['faces'].shape[0] > 0 
+    
+#   shreck = kal.datasets.SHREC16(root = 'tests/datasets_eval/shrec_16/', categories = ['alien', 'ants'], mode = 'train')
+#   for obj in shreck: 
+#       assert obj['verts'].shape[0] > 0  
+#       assert obj['faces'].shape[0] > 0 
 
 
 # test_SHREC16()

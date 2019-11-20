@@ -51,12 +51,12 @@ z = torch.normal(torch.zeros(args.batchsize, 200), torch.ones(args.batchsize, 20
 fake_voxels = gen(z)
 
 for i,model in enumerate(fake_voxels): 
-	print ('Rendering model {}'.format(i))
-	model = model[:-2,:-2,:-2]
-	model = kal.rep.voxel.max_connected(model, .7)
-	verts, faces = kal.conversion.voxel.to_mesh_quad(model)
-	mesh = kal.rep.QuadMesh.from_tensors( verts, faces)
-	mesh.laplacian_smoothing(iterations = 1)
-	mesh.show()
+    print ('Rendering model {}'.format(i))
+    model = model[:-2,:-2,:-2]
+    model = kal.rep.voxel.max_connected(model, .7)
+    verts, faces = kal.conversion.voxel.to_mesh_quad(model)
+    mesh = kal.rep.QuadMesh.from_tensors( verts, faces)
+    mesh.laplacian_smoothing(iterations = 1)
+    mesh.show()
 
 

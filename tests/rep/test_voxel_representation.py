@@ -115,7 +115,7 @@ def test_extract_surface(device):
     surface_voxel = kal.conversions.voxelgridconversions.extract_surface(voxel)
     assert voxel.sum() == surface_voxel.sum()
     assert surface_voxel.sum() == 0
-    assert kal.conversions.voxelgridconversions.extract_surface(surface_voxel).sum() == surface_voxel.sum()	
+    assert kal.conversions.voxelgridconversions.extract_surface(surface_voxel).sum() == surface_voxel.sum() 
 
     voxel = torch.ones([64, 64, 64]).to(device)
     surface_voxel = kal.conversions.voxelgridconversions.extract_surface(voxel)
