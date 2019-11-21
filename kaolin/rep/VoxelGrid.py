@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# 
+#
 # Multi-View Silhouette and Depth Decomposition for High Resolution 3D Object Representation components
 #
 # Copyright (c) 2019 Edward Smith

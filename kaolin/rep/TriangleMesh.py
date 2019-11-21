@@ -175,8 +175,8 @@ class TriangleMesh(Mesh):
         # Add and normalize the normals (for a more robust estimate)
         face_normals = vn_a + vn_b + vn_c
         face_normals_norm = face_normals.norm(dim=1)
-        face_normals = face_normals / torch.where(face_normals_norm > 0,
-            face_normals_norm, torch.ones_like(face_normals_norm)).view(-1, 1)
+        face_normals = (face_normals / torch.where(face_normals_norm > 0,
+                        face_normals_norm, torch.ones_like(face_normals_norm)).view(-1, 1))
         return face_normals
 
     def compute_edge_lengths(self):
@@ -340,7 +340,6 @@ class TriangleMesh(Mesh):
                 >>> neighborhood_sum = torch.sparse.mm(adj_info, mesh.vertices)
 
         """
-
         if self.adj is None:
 
             v1 = self.faces[:, 0].view(-1, 1)
