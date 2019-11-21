@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
-
-import torch
 from torch import nn
-import torch.nn.functional as F
 
 
 class VGG18(nn.Module):

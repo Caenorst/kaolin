@@ -41,14 +41,10 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 from .PointNet import PointNetFeatureExtractor
 
 import kaolin.cuda as ext
-import kaolin.cuda.ball_query
-import kaolin.cuda.furthest_point_sampling
-import kaolin.cuda.three_nn
 
 
 class FurthestPointSampling(torch.autograd.Function):

@@ -12,11 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import math
-
-import torch
 from torch import nn
-from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 
 from .SimpleGCN import SimpleGCN

@@ -35,11 +35,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import os
-import sys
-import copy
-import math
-import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -59,9 +54,11 @@ class DGCNN(nn.Module):
 
     Args:
         input_dim (int): number of features per point. Default: ``3`` (xyz point coordinates)
-        conv_dims (list): list of output feature dimensions of the convolutional layers. Default: ``[64,64,128,256]`` (as preoposed in original implementation).
+        conv_dims (list): list of output feature dimensions of the convolutional layers.
+                          Default: ``[64,64,128,256]`` (as preoposed in original implementation).
         emb_dims (int): dimensionality of the intermediate embedding.
-        fc_dims (list): list of output feature dimensions of the fully connected layers. Default: ``[512, 256]`` (as preoposed in original implementation).
+        fc_dims (list): list of output feature dimensions of the fully connected layers.
+                        Default: ``[512, 256]`` (as preoposed in original implementation).
         output_channels (int): number of output channels. Default: ``64``.
         dropout (float): dropout probability (applied to fully connected layers only). Default: ``0.5``.
         k (int): number of nearest neighbors.
@@ -75,7 +72,7 @@ class DGCNN(nn.Module):
 
             @article{dgcnn,
                 title={Dynamic Graph CNN for Learning on Point Clouds},
-                author={Wang, Yue and Sun, Yongbin and Liu, Ziwei and Sarma, Sanjay E. and Bronstein, Michael M. and Solomon, Justin M.},
+                author={Wang, Yue and Sun, Yongbin and Liu, Ziwei and Sarma, Sanjay E. and Bronstein, Michael M. and Solomon, Justin M.}, # noqa: B950
                 journal={ACM Transactions on Graphics (TOG)},
                 year={2019}
             }
@@ -84,15 +81,20 @@ class DGCNN(nn.Module):
     def __init__(
             self,
             input_dim=3,
-            conv_dims=[64, 64, 128, 256],
+            conv_dims=None,
             emb_dims=1024,  # dimension of embeddings
-            fc_dims=[512, 256],
+            fc_dims=None,
             output_channels=64,
             dropout=0.5,  # dropout probability
             k=20,  # number of nearest neighbors
-            use_cuda=True,  # use CUDA or not
-    ):
+            use_cuda=True):
         super(DGCNN, self).__init__()
+
+        if conv_dims is None:
+            conv_dims = [64, 64, 128, 256]
+        if fc_dims is None:
+            fc_dims = [512, 256]
+
         self.k = k
         self.use_cuda = use_cuda
 
@@ -165,8 +167,7 @@ class DGCNN(nn.Module):
 
         _, num_dims, _ = x.size()
 
-        x = x.transpose(2, 1).contiguous(
-        )  # (batch_size, num_points, num_dims)  -> (batch_size*num_points, num_dims) #   batch_size * num_points * k + range(0, batch_size*num_points)
+        x = x.transpose(2, 1).contiguous()  # (batch_size, num_points, num_dims)  -> (batch_size * num_points, num_dims)
         feature = x.view(batch_size * num_points, -1)[idx, :]
         feature = feature.view(batch_size, num_points, k, num_dims)
         x = x.view(batch_size, num_points, 1, num_dims).repeat(1, 1, k, 1)

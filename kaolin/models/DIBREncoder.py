@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 
 class DIBREncoder(nn.Module):
@@ -30,7 +28,7 @@ class DIBREncoder(nn.Module):
 
             @inproceedings{chen2019dibrender,
                 title={Learning to Predict 3D Objects with an Interpolation-based Differentiable Renderer},
-                author={Wenzheng Chen and Jun Gao and Huan Ling and Edward Smith and Jaakko Lehtinen and Alec Jacobson and Sanja Fidler},
+                author={Wenzheng Chen and Jun Gao and Huan Ling and Edward Smith and Jaakko Lehtinen and Alec Jacobson and Sanja Fidler}, # noqa: B950
                 booktitle={Advances In Neural Information Processing Systems},
                 year={2019}
             }

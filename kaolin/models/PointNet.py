@@ -78,12 +78,15 @@ class PointNetFeatureExtractor(nn.Module):
     def __init__(self,
                  in_channels: int = 3,
                  feat_size: int = 1024,
-                 layer_dims: Iterable[int] = [64, 128],
+                 layer_dims: Iterable[int] = None,
                  global_feat: bool = True,
                  activation=F.relu,
                  batchnorm: bool = True,
                  transposed_input: bool = False):
         super(PointNetFeatureExtractor, self).__init__()
+
+        if layer_dims is None:
+            layer_dims = [64, 128]
 
         if not isinstance(in_channels, int):
             raise TypeError('Argument in_channels expected to be of type int. '
@@ -253,13 +256,17 @@ class PointNetClassifier(nn.Module):
                  feat_size: int = 1024,
                  num_classes: int = 2,
                  dropout: float = 0.,
-                 classifier_layer_dims: Iterable[int] = [512, 256],
-                 feat_layer_dims: Iterable[int] = [64, 128],
+                 classifier_layer_dims: Iterable[int] = None,
+                 feat_layer_dims: Iterable[int] = None,
                  activation=F.relu,
                  batchnorm: bool = True,
                  transposed_input: bool = False):
-
         super(PointNetClassifier, self).__init__()
+
+        if classifier_layer_dims is None:
+            classifier_layer_dims = [512, 256]
+        if feat_layer_dims is None:
+            feat_layer_dims = [64, 128]
 
         if not isinstance(num_classes, int):
             raise TypeError('Argument num_classes must be of type int. '
@@ -418,12 +425,17 @@ class PointNetSegmenter(nn.Module):
                  feat_size: int = 1024,
                  num_classes: int = 2,
                  dropout: float = 0.,
-                 classifier_layer_dims: Iterable[int] = [512, 256],
-                 feat_layer_dims: Iterable[int] = [64, 128],
+                 classifier_layer_dims: Iterable[int] = None,
+                 feat_layer_dims: Iterable[int] = None,
                  activation=F.relu,
                  batchnorm: bool = True,
                  transposed_input: bool = False):
         super(PointNetSegmenter, self).__init__()
+
+        if classifier_layer_dims is None:
+            classifier_layer_dims = [512, 256]
+        if feat_layer_dims is None:
+            feat_layer_dims = [64, 128]
 
         if not isinstance(num_classes, int):
             raise TypeError('Argument num_classes must be of type int. '

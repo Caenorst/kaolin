@@ -41,7 +41,7 @@ class SuperresNetwork(nn.Module):
                 pages = {6479--6489},
                 year = {2018},
                 publisher = {Curran Associates, Inc.},
-                url = {http://papers.nips.cc/paper/7883-multi-view-silhouette-and-depth-decomposition-for-high-resolution-3d-object-representation.pdf}
+                url = {http://papers.nips.cc/paper/7883-multi-view-silhouette-and-depth-decomposition-for-high-resolution-3d-object-representation.pdf} # noqa: B950
             }
     """
 
