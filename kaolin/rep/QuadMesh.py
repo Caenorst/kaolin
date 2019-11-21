@@ -12,11 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
-
 import torch
 
-from kaolin.helpers import _composedecorator
 from kaolin.rep.Mesh import Mesh
 import numpy as np
 
@@ -171,7 +168,7 @@ class QuadMesh(Mesh):
         return points, face_choices
 
     @classmethod
-    def compute_vertex_normals(self):
+    def compute_vertex_normals(cls):
         raise NotImplementedError
 
     def compute_edge_lengths(self):
@@ -186,6 +183,7 @@ class QuadMesh(Mesh):
     def compute_dihedral_angles_per_edge(self):
         raise NotImplementedError
 
+    @staticmethod
     def load_tensors(filename: (str), enable_adjacency: bool = False):
         r"""Loads the tensor information of the mesh from a saved numpy array.
 

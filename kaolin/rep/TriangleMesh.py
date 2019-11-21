@@ -12,14 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from abc import abstractmethod
-
 import torch
 import numpy as np
-import torch.nn.functional as F
 
 
-from kaolin.helpers import _composedecorator
 from kaolin.rep.Mesh import Mesh
 
 
@@ -311,6 +307,7 @@ class TriangleMesh(Mesh):
 
         return adj
 
+    @staticmethod
     def load_tensors(filename: (str), enable_adjacency: bool = False):
         r"""Loads the tensor information of the mesh from a saved numpy array.
 

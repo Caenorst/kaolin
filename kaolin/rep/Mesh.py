@@ -114,7 +114,7 @@ class Mesh():
                        None, None, None, None, None, None)
 
     @_composedecorator(classmethod, abstractmethod)
-    def from_obj(self, filename: str, with_vt: bool = False,
+    def from_obj(cls, filename: str, with_vt: bool = False,
                  enable_adjacency: bool = False, texture_res=4):
         r"""Loads object in .obj wavefront format.
 
@@ -181,7 +181,7 @@ class Mesh():
                     if line.startswith('mtllib'):
                         filename_mtl = os.path.join(
                             os.path.dirname(filename), line.split()[1])
-                        textures = self.load_textures(
+                        textures = cls.load_textures(
                             filename, filename_mtl, texture_res)
 
                 f.close()
@@ -198,7 +198,7 @@ class Mesh():
 
         if enable_adjacency:
             edge2key, edges, vv, vv_count, ve, ve_count, vf, vf_count, ff, ff_count, \
-                ee, ee_count, ef, ef_count = self.compute_adjacency_info(
+                ee, ee_count, ef, ef_count = cls.compute_adjacency_info(
                     vertices, faces)
         else:
             edge2key, edges, vv, vv_count, ve, ve_count, vf, vf_count, ff, \
@@ -206,12 +206,12 @@ class Mesh():
                 None, None, None, None, None, None, None, None, None, None, \
                 None
 
-        return self(vertices, faces, uvs, face_textures, textures, edges,
-                    edge2key, vv, vv_count, vf, vf_count, ve, ve_count, ff, ff_count,
-                    ef, ef_count, ee, ee_count)
+        return cls(vertices, faces, uvs, face_textures, textures, edges,
+                   edge2key, vv, vv_count, vf, vf_count, ve, ve_count, ff, ff_count,
+                   ef, ef_count, ee, ee_count)
 
     @classmethod
-    def from_off(self, filename: str,
+    def from_off(cls, filename: str,
                  enable_adjacency: Optional[bool] = False):
         r"""Loads a mesh from a .off file.
 
@@ -275,17 +275,16 @@ class Mesh():
 
         if enable_adjacency:
             edge2key, edges, vv, vv_count, ve, ve_count, vf, vf_count, ff, ff_count, \
-                ee, ee_count, ef, ef_count = self.compute_adjacency_info(
-                    vertices, faces)
+                ee, ee_count, ef, ef_count = cls.compute_adjacency_info(vertices, faces)
         else:
             edge2key, edges, vv, vv_count, ve, ve_count, vf, vf_count, ff, \
                 ff_count, ee, ee_count, ef, ef_count = None, None, None, \
                 None, None, None, None, None, None, None, None, None, None, \
                 None
 
-        return self(vertices, faces, None, None, None, edges,
-                    edge2key, vv, vv_count, vf, vf_count, ve, ve_count, ff, ff_count,
-                    ef, ef_count, ee, ee_count)
+        return cls(vertices, faces, None, None, None, edges,
+                   edge2key, vv, vv_count, vf, vf_count, ve, ve_count, ff, ff_count,
+                   ef, ef_count, ee, ee_count)
 
     @staticmethod
     def _cuda_helper(tensor):
@@ -401,7 +400,7 @@ class Mesh():
         return colors, texture_filenames
 
     @classmethod
-    def load_textures(self, filename_obj: str, filename_mtl: str,
+    def load_textures(cls, filename_obj: str, filename_mtl: str,
                       texture_res: int):
         r""" Returns texture for a given obj file, where texture is
         defined using vertex texture uvs.
@@ -459,7 +458,7 @@ class Mesh():
         faces = torch.from_numpy(faces).cuda()
         faces[1 < faces] = faces[1 < faces] % 1
 
-        colors, texture_filenames = self.load_mtl(filename_mtl)
+        colors, texture_filenames = cls.load_mtl(filename_mtl)
         textures = torch.ones(
             faces.shape[0], texture_res**2, 3, dtype=torch.float32)
         textures = textures.cuda()

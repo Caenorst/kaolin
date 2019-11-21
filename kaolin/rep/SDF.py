@@ -38,7 +38,6 @@
 import numpy as np
 import torch
 
-import kaolin as kal
 from kaolin.triangle_hash import TriangleHash as _TriangleHash
 import kaolin.cuda.mesh_intersection as mint
 
