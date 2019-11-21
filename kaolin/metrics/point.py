@@ -15,8 +15,6 @@
 import torch
 from kaolin.nnsearch import nnsearch
 import kaolin.cuda.sided_distance as sd
-from scipy.spatial import cKDTree as Tree
-import numpy as np
 
 
 class SidedDistanceFunction(torch.autograd.Function):
@@ -125,7 +123,6 @@ def directed_distance(S1: torch.Tensor, S2: torch.Tensor, mean: bool = True):
         closest_S2 = torch.index_select(S2, 0, closest_index_in_S2)
 
     else:
-        from time import time
         closest_index_in_S2 = nnsearch(S1, S2)
         closest_S2 = S2[closest_index_in_S2]
 

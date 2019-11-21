@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import torch
-import kaolin as kal
 
 
 def iou(pred, gt, thresh=.5, reduction='mean'):
