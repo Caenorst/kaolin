@@ -156,8 +156,10 @@ class ShapeNet_Meshes(data.Dataset):
         torch.Size([1910, 3])
     """
 
-    def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
+    def __init__(self, root: str = '../data/', categories: list = None, train: bool = True,
                  download: bool = True, split: float = .7, no_progress: bool = False):
+        if categories is None:
+            categories = ['chair']
         self.root = Path(root)
         self.paths = []
         self.synset_idxs = []
@@ -249,9 +251,11 @@ class ShapeNet_Images(data.Dataset):
         torch.Size([10, 4, 137, 137])
     """
 
-    def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
+    def __init__(self, root: str = '../data/', categories: list = None, train: bool = True,
                  split: float = .7, download: bool = True, views: int = 23, transform=None,
                  no_progress: bool = False):
+        if categories is None:
+            cateogires = ['chair']
         self.root = root
         self.synsets = _convert_categories(categories)
         self.transform = transform
@@ -353,9 +357,13 @@ class ShapeNet_Voxels(data.Dataset):
         torch.Size([10, 128, 128, 128])
 
     """
-    def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
-                 download: bool = True, split: float = .7, resolutions=[128, 32],
+    def __init__(self, root: str = '../data/', categories: list = None, train: bool = True,
+                 download: bool = True, split: float = .7, resolutions=None,
                  no_progress: bool = False):
+        if categories is None:
+            categories = ['chair']
+        if resolutions is None:
+            resolutions = [128, 32]
         self.root = Path(root)
         self.shapenet_root = self.root / 'ShapeNet'
         self.cache_dir = self.shapenet_root / 'voxels'
@@ -442,10 +450,13 @@ class ShapeNet_Surface_Meshes(data.Dataset):
 
     """
 
-    def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
+    def __init__(self, root: str = '../data/', categories: list = None, train: bool = True,
                  download: bool = True, split: float = .7, resolution: int = 100,
                  smoothing_iterations: int = 3, mode='Tri', no_progress: bool = False):
         assert mode in ['Tri', 'Quad']
+
+        if categories is None:
+            categories = ['chair']
 
         self.root = Path(root)
         self.shapenet_root = self.root / 'ShapeNet'
@@ -560,9 +571,11 @@ class ShapeNet_Points(data.Dataset):
 
     """
 
-    def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
+    def __init__(self, root: str = '../data/', categories: list = None, train: bool = True,
                  download: bool = True, split: float = .7, num_points: int = 5000, smoothing_iterations=3,
                  surface=True, resolution=100, normals=True, no_progress: bool = False):
+        if categories is None:
+            categories = ['chair']
         self.root = Path(root)
         self.shapenet_root = self.root / 'ShapeNet'
         self.cache_dir = self.shapenet_root / 'points'
@@ -670,10 +683,12 @@ class ShapeNet_SDF_Points(data.Dataset):
 
     """
 
-    def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
+    def __init__(self, root: str = '../data/', categories: list = None, train: bool = True,
                  download: bool = True, split: float = .7, resolution: int = 100,
                  num_points: int = 5000, occ: bool = False, smoothing_iterations: int = 3,
                  sample_box=True, no_progress: bool = False):
+        if categories is None:
+            categories = ['chair']
         self.root = Path(root)
         self.shapenet_root = self.root / 'ShapeNet'
         self.cache_dir = self.shapenet_root / 'sdf_points'
@@ -851,7 +866,7 @@ class ShapeNet_Tags(data.Dataset):
         for index, name in enumerate(self.names):
             self.name_to_index[name] = index
 
-    def get_tags_from_str(self, tags_str, inverse_order=True, forbidden_symbols=[" ", "/", "-", "\*"]):
+    def get_tags_from_str(self, tags_str, inverse_order=True, forbidden_symbols=None):
         r"""Process the tag string and return a list of tags. ``Note``: The tags that contain forbidden_symbols are ignored.
 
         Args:
@@ -861,6 +876,8 @@ class ShapeNet_Tags(data.Dataset):
         Returns:
             list of tags.
         """
+        if forbidden_symbols is None:
+            forbidden_symbols = [" ", "/", "-", r"\*"]
         output_list = [
             tag.strip() for tag in tags_str.split(',')
             if re.match(".*(:?{}).*".format("|".join(forbidden_symbols)), tag.strip()) is None

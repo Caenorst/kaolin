@@ -51,13 +51,15 @@ class ModelNet10(torch.utils.data.Dataset):
 
     def __init__(self, basedir: str, rep: Optional[str] = 'mesh',
                  split: Optional[str] = 'train',
-                 categories: Optional[Iterable] = ['bed'],
+                 categories: Optional[Iterable] = None,
                  device: Optional[Union[torch.device, str]] = 'cpu',
                  transform: Optional[Callable] = None,
                  **kwargs):
 
         super(ModelNet10, self).__init__()
 
+        if categories is None:
+            categories = ['bed']
         if rep.lower() not in ['mesh', 'pointcloud']:
             raise ValueError('Argument \'rep\' must be one of \'mesh\' '
                              ' or \'pointcloud\'. Got {0} instead.'.format(rep))
@@ -141,7 +143,10 @@ class ModelNetVoxels(object):
     """
 
     def __init__(self, root: str = '../data/', train: bool = True, test: bool = True,
-                 download: bool = True, categories: list = ['chair'], single_view: bool = True):
+                 download: bool = True, categories: list = None, single_view: bool = True):
+        if categories is None:
+            categories = ['chair']
+
         if not os.path.exists(root + '/ModelNet/'):
             assert download, "ModelNet is not found, and download is set to False"
             assert (train or test), 'either train or test must be set to True'

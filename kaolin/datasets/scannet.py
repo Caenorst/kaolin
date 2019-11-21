@@ -35,8 +35,8 @@ class ScanNet(data.Dataset):
                  transform: Optional[Callable] = None,
                  label_transform: Optional[Callable] = None,
                  loader: Optional[Callable] = None,
-                 color_mean: Optional[list] = [0., 0., 0.],
-                 color_std: Optional[list] = [1., 1., 1.],
+                 color_mean: Optional[list] = None,
+                 color_std: Optional[list] = None,
                  load_depth: Optional[bool] = False,
                  seg_classes: Optional[str] = 'nyu40'):
         self.root_dir = root_dir
@@ -46,8 +46,8 @@ class ScanNet(data.Dataset):
         self.label_transform = label_transform
         self.loader = loader
         self.length = 0
-        self.color_mean = color_mean
-        self.color_std = color_std
+        self.color_mean = [0., 0., 0.] if color_mean is None else color_mean
+        self.color_std = [1., 1., 1.] if color_std is None else color_std
         self.load_depth = load_depth
         self.seg_classes = seg_classes
         # color_encoding has to be initialized AFTER seg_classes
@@ -60,7 +60,7 @@ class ScanNet(data.Dataset):
                 self.loader = self.scannet_loader
 
         # Get test data and labels filepaths
-        self.data, self.depth, self.labels = get_filenames_scannet(
+        self.data, self.depth, self.labels = ScanNet.get_filenames_scannet(
             self.root_dir, self.scene_id)
         self.length += len(self.data)
 
@@ -165,6 +165,7 @@ class ScanNet(data.Dataset):
                 ('otherfurniture', (82, 84, 163)),
             ])
 
+    @staticmethod
     def get_filenames_scannet(base_dir: str, scene_id: str):
         """Helper function that returns a list of scannet images and the
         corresponding segmentation labels, given a base directory name
@@ -259,8 +260,8 @@ class ScanNet(data.Dataset):
         return filtered_files
 
     def scannet_loader(self, data_path: str, label_path: str,
-                       color_mean: Optional[list] = [0., 0., 0.],
-                       color_std: Optional[list] = [1., 1., 1.],
+                       color_mean: Optional[list] = None,
+                       color_std: Optional[list] = None,
                        seg_classes: str = 'nyu40'):
         """Loads a sample and label image given their path as PIL images
         (nyu40 classes).
@@ -276,6 +277,11 @@ class ScanNet(data.Dataset):
         Returns the image and the label as PIL images.
 
         """
+
+        if color_mean is None:
+            color_mean = [0., 0., 0.]
+        if color_std is None:
+            color_std = [1., 1., 1.]
 
         # Load image.
         data = np.array(imageio.imread(data_path))
@@ -299,8 +305,8 @@ class ScanNet(data.Dataset):
 
     def scannet_loader_depth(self, data_path: str, depth_path: str,
                              label_path: str,
-                             color_mean: Optional[list] = [0., 0., 0.],
-                             color_std: Optional[list] = [1., 1., 1.],
+                             color_mean: Optional[list] = None,
+                             color_std: Optional[list] = None,
                              seg_classes: Optional[str] = 'nyu40'):
         """Loads a sample and label image given their path as PIL images
         (nyu40 classes).
@@ -319,6 +325,11 @@ class ScanNet(data.Dataset):
             (PIL.Image): the label as PIL images.
 
         """
+
+        if color_mean is None:
+            color_mean = [0., 0., 0.]
+        if color_std is None:
+            color_std = [1., 1., 1.]
 
         # Load image
         rgb = np.array(imageio.imread(data_path))
@@ -376,6 +387,7 @@ class ScanNet(data.Dataset):
             label[np.where(label == src)] = tar
         return label
 
+    @staticmethod
     def create_label_image(output, color_palette):
         """Create a label image, given a network output (each pixel contains
         # class index) and a color palette.

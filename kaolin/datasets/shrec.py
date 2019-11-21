@@ -41,10 +41,13 @@ class SHREC16(Dataset):
 
     """
 
-    def __init__(self, root: str, categories: list = ['alien'],
+    def __init__(self, root: str, categories: list = None,
                  mode: list = 'train'):
 
         super(SHREC16, self).__init__()
+
+        if categories is None:
+            categories = ['alien']
 
         if mode not in ['train', 'test']:
             raise ValueError('Argument \'mode\' must be one of \'train\''
