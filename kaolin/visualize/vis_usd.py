@@ -12,20 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import re
-import math
 import torch
-import logging
 import numpy as np
 from pathlib import Path
-import os
-from typing import Dict, Iterable, List, Tuple, Union
+from typing import Dict, List, Tuple, Union
 
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, Vt
+from pxr import Usd, UsdGeom, Gf, Vt
 
 from kaolin.rep.Mesh import Mesh
 from kaolin.rep import TriangleMesh
-from kaolin.rep import QuadMesh
 from kaolin.rep import PointCloud
 from kaolin.rep import VoxelGrid
 
@@ -244,8 +239,10 @@ class VisUsd:
         points[:, self.up_axis_index] -= y_translation - bottom
         return points, y_translation
 
-    def _set_points_center(self, points, center_point: List[float] = [0., 0., 0.]):
+    def _set_points_center(self, points, center_point: List[float] = None):
         r"""Set center of points to match center_point."""
+        if center_point is None:
+            center_point = [0., 0., 0.]
         center_point = torch.tensor(center_point, device=points.device)
         extents = torch.max(points, 0)[0] - torch.min(points, 0)[0]
         curr_center = torch.max(points, 0)[0] - extents / 2.0

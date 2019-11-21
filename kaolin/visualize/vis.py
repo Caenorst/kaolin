@@ -23,7 +23,7 @@ import pptk
 
 
 def show(inp: Union[kaolin.rep.Mesh, kaolin.rep.PointCloud,
-         kaolin.rep.VoxelGrid], options: dict = {}, mode='points'):
+         kaolin.rep.VoxelGrid], options: dict = None, mode='points'):
     r"""Visualizer class, for the representations defined in kaolin.rep.
 
     Args:
@@ -32,6 +32,9 @@ def show(inp: Union[kaolin.rep.Mesh, kaolin.rep.PointCloud,
         options (dict): Visualization options
 
     """
+    if options is None:
+        options = {}
+
     if isinstance(inp, kaolin.rep.Mesh):
         colors = [.7, .2, .2]
         if 'colors' in options:
@@ -71,7 +74,7 @@ def show(inp: Union[kaolin.rep.Mesh, kaolin.rep.PointCloud,
         show_pointcloud(inp, colors)
 
 
-def show_mesh(input_mesh: kaolin.rep.Mesh, colors: list = [.7, .2, .2]):
+def show_mesh(input_mesh: kaolin.rep.Mesh, colors: list = None):
     r""" Visualizer for meshes
 
     Args:
@@ -79,6 +82,8 @@ def show_mesh(input_mesh: kaolin.rep.Mesh, colors: list = [.7, .2, .2]):
             faces (torch.Tensor): faces of mesh to be visualized
             colors (list): rbg colour values for rendered mesh
     """
+    if colors is None:
+        colors = [.7, .2, .2]
 
     mesh = trimesh.Trimesh(vertices=input_mesh.vertices.data.cpu().numpy(),
                            faces=input_mesh.faces.data.cpu().numpy())
@@ -88,7 +93,7 @@ def show_mesh(input_mesh: kaolin.rep.Mesh, colors: list = [.7, .2, .2]):
 
 def show_sdf(sdf: kaolin.rep.SDF, mode='mesh', bbox_center: float = 0.,
              bbox_dim: float = 1., num_points: int = 100000,
-             colors=[.7, .2, .2]):
+             colors=None):
     r""" Visualizer for voxel array
 
     Args:
@@ -97,6 +102,9 @@ def show_sdf(sdf: kaolin.rep.SDF, mode='mesh', bbox_center: float = 0.,
                 or a colourful sdf pointcloud.
         colors (list): RGB colour values for rendered array.
     """
+
+    if colors is None:
+        colors = [.7, .2, .2]
     assert mode in ['mesh', 'pointcloud', 'sdf']
 
     if mode == 'mesh':
@@ -123,7 +131,7 @@ def show_sdf(sdf: kaolin.rep.SDF, mode='mesh', bbox_center: float = 0.,
         v.close()
 
 
-def show_pointcloud(points, colors=[.7, .2, .2]):
+def show_pointcloud(points, colors=None):
     r"""Visualizer for point clouds.
 
     Args:
@@ -132,7 +140,7 @@ def show_pointcloud(points, colors=[.7, .2, .2]):
 
     """
     point_colours = np.zeros(points.shape)
-    point_colours[:] = colors
+    point_colours[:] = [.7, .2, .2] if colors is None else colors
 
     v = pptk.viewer(points.data.cpu().numpy())
     v.attributes(point_colours)
@@ -140,7 +148,7 @@ def show_pointcloud(points, colors=[.7, .2, .2]):
     v.close()
 
 
-def show_voxelgrid(voxel, thresh=.5, mode='exact', colors=[.7, .2, .2]):
+def show_voxelgrid(voxel, thresh=.5, mode='exact', colors=None):
     r""" Visualizer for voxel array
 
     Args:
@@ -157,5 +165,5 @@ def show_voxelgrid(voxel, thresh=.5, mode='exact', colors=[.7, .2, .2]):
         voxel.cpu(), thresh=.5, mode=mode)
     mesh = trimesh.Trimesh(vertices=verts,
                            faces=faces)
-    mesh.visual.vertex_colors = colors
+    mesh.visual.vertex_colors = [.7, .2, .2] if colors is None else colors
     mesh.show()
