@@ -35,18 +35,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Optional, Union, List
+from typing import Union
 
 import numpy as np
 import torch
-import torch.nn.functional as F
-from scipy import ndimage
 
 from kaolin.rep import VoxelGrid
-from kaolin.conversions.voxelgridconversions import confirm_def
 from kaolin.conversions.voxelgridconversions import threshold
-from kaolin.conversions.voxelgridconversions import extract_surface
-from kaolin import helpers
 
 
 # Tiny eps
@@ -377,45 +372,45 @@ def max_connected(voxel: Union[torch.Tensor, VoxelGrid], thresh: float = .5):
         torch.Torch: updated voxel array
 
     Example:
-        >>> voxel = torch.rand 
+        >>> voxel = torch.rand
     """
-    
+
     voxel = voxel.clone()
     voxel = threshold(voxel, thresh)
     max_component = np.zeros(voxel.shape, dtype=bool)
     for startx in range(voxel.shape[0]):
         for starty in range(voxel.shape[1]):
             for startz in range(voxel.shape[2]):
-                if not voxel[startx,starty,startz]:
+                if not voxel[startx, starty, startz]:
                     continue
                 # start a new component
                 component = np.zeros(voxel.shape, dtype=bool)
-                stack = [[startx,starty,startz]]
-                component[startx,starty,startz] = True
-                voxel[startx,starty,startz] = False
+                stack = [[startx, starty, startz]]
+                component[startx, starty, startz] = True
+                voxel[startx, starty, startz] = False
                 while len(stack) > 0:
-                    x,y,z = stack.pop()
-                    for i in range(x-1, x+1 + 1):
-                        for j in range(y-1, y+1 + 1):
-                            for k in range(z-1, z+1 + 1):
-                                if (i-x)**2+(j-y)**2+(k-z)**2 > 1:
+                    x, y, z = stack.pop()
+                    for i in range(x - 1, x + 1 + 1):
+                        for j in range(y - 1, y + 1 + 1):
+                            for k in range(z - 1, z + 1 + 1):
+                                if (i - x) ** 2 + (j - y) ** 2 + (k - z) ** 2 > 1:
                                     continue
-                                if _voxel_exist(voxel, i,j,k):
-                                    voxel[i,j,k] = False
-                                    component[i,j,k] = True
-                                    stack.append([i,j,k])
+                                if _voxel_exist(voxel, i, j, k):
+                                    voxel[i, j, k] = False
+                                    component[i, j, k] = True
+                                    stack.append([i, j, k])
                 if component.sum() > max_component.sum():
                     max_component = component
-    
+
     return torch.FloatTensor(max_component).to(voxel.device)
 
 
-def _voxel_exist(voxels, x,y,z):
-    if x < 0 or y < 0 or z < 0 or x >= voxels.shape[0]\
-        or y >= voxels.shape[1] or z >= voxels.shape[2]:
+def _voxel_exist(voxels, x, y, z):
+    if (x < 0 or y < 0 or z < 0 or x >= voxels.shape[0] or
+            y >= voxels.shape[1] or z >= voxels.shape[2]):
         return False
     else :
-        return voxels[x,y,z] == 1 
+        return voxels[x, y, z] == 1
 
 
 if __name__ == '__main__':

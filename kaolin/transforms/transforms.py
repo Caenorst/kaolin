@@ -32,7 +32,6 @@ import kaolin.conversions as cvt
 # from kaolin.conversion import voxel as cvt_voxel
 from kaolin.transforms import pointcloudfunc as pcfunc
 from kaolin.transforms import meshfunc
-from kaolin.transforms import voxelfunc
 
 
 class Compose(object):
@@ -368,7 +367,7 @@ class ThresholdVoxelGrid(object):
             (torch.Tensor): Thresholded voxel array.
         """
         return cvt.threshold(voxgrid, thresh=self.thresh,
-            inplace=self.inplace)
+                             inplace=self.inplace)
 
     def __repr__(self):
         return self.__class__.__name__ + '(threshold={0})'.format(self.thresh)
@@ -823,7 +822,7 @@ class SDFToTriangleMesh(object):
             (TriangleMesh): Computed triangle mesh.
         """
         verts, faces = cvt.sdf_to_trianglemesh(sdf, self.bbox_center, self.bbox_dim,
-                                       self.resolution, self.upsampling_steps)
+                                               self.resolution, self.upsampling_steps)
         return TriangleMesh.from_tensors(vertices=verts, faces=faces)
 
     def __repr__(self):
@@ -865,7 +864,7 @@ class SDFToPointCloud(object):
             (torch.FloatTensor): Computed point cloud.
         """
         return cvt.sdf_to_pointcloud(sdf, self.bbox_center, self.bbox_dim, self.resolution,
-                                self.upsampling_steps, self.num_points)
+                                     self.upsampling_steps, self.num_points)
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '(bbox_center={0}'.format(self.bbox_center)
@@ -906,7 +905,8 @@ class SDFToVoxelGrid(object):
             (torch.FloatTensor): Computed point cloud.
         """
         return cvt.sdf_to_voxelgrid(sdf, self.bbox_center, self.bbox_dim, self.resolution,
-                            self.upsampling_steps, self.num_points)
+                                    self.upsampling_steps, self.num_points)
+
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '(bbox_center={0}'.format(self.bbox_center)

@@ -12,14 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, List, Optional, Type, Union
+from typing import Iterable, Optional, Type, Union
 
-import numpy as np
 import torch
-import torch.nn.functional as F
-from scipy import ndimage
 
-from kaolin.rep import Mesh, TriangleMesh, QuadMesh
+from kaolin.rep import Mesh, TriangleMesh
 from kaolin import helpers
 
 
@@ -112,7 +109,7 @@ def normalize(mesh: Type[Mesh], inplace: Optional[bool] = True):
     """
     if not isinstance(mesh, Mesh):
         raise TypeError('Input mesh must be of type Mesh. '
-            'Got {0} instead.'.format(type(mesh)))
+                        'Got {0} instead.'.format(type(mesh)))
     if not inplace:
         mesh = mesh.clone()
 
@@ -144,7 +141,7 @@ def scale(mesh: Type[Mesh], scf: Union[float, Iterable],
     """
     if not isinstance(mesh, Mesh):
         raise TypeError('Input mesh must be of type Mesh. '
-            'Got {0} instead.'.format(type(mesh)))
+                        'Got {0} instead.'.format(type(mesh)))
     if not inplace:
         mesh = mesh.clone()
 
@@ -158,10 +155,10 @@ def scale(mesh: Type[Mesh], scf: Union[float, Iterable],
             _scf = [scf[0], scf[1], scf[2]]
         else:
             raise ValueError('Exactly 1 or 3 values required for input scf.'
-                'Got {0} instead.'.format(len(scf)))
+                             'Got {0} instead.'.format(len(scf)))
     else:
         raise TypeError('Input scf must be of type int, float, list, or tuple.'
-            ' Got {0} instead.'.format(type(scf)))
+                        ' Got {0} instead.'.format(type(scf)))
 
     _scf = torch.Tensor(_scf).to(mesh.vertices.device).view(1, 3)
     mesh.vertices = _scf * mesh.vertices
@@ -185,18 +182,18 @@ def translate(mesh: Type[Mesh], trans: Union[torch.Tensor, Iterable],
     """
     if not isinstance(mesh, Mesh):
         raise TypeError('Input mesh must be of type Mesh. '
-            'Got {0} instead.'.format(type(mesh)))
+                        'Got {0} instead.'.format(type(mesh)))
     if not inplace:
         mesh = mesh.clone()
     if torch.is_tensor(trans):
         if trans.numel() != 3:
             raise ValueError('Input trans must contain exactly 3 elements. '
-                'Got {0} instead.'.format(trans.numel()))
+                             'Got {0} instead.'.format(trans.numel()))
         trans = trans.view(1, 3)
     elif isinstance(trans, list) or isinstance(trans, tuple):
         if len(trans) != 3:
             raise ValueError('Exactly 1 or 3 values required for input trans.'
-                'Got {0} instead.'.format(len(trans)))
+                             'Got {0} instead.'.format(len(trans)))
         trans = torch.Tensor([trans[0], trans[1], trans[2]]).to(
             mesh.vertices.device).view(1, 3)
 
@@ -218,7 +215,7 @@ def rotate(mesh: Type[Mesh], rotmat: torch.Tensor,
     """
     if not isinstance(mesh, Mesh):
         raise TypeError('Input mesh must be of type Mesh. '
-            'Got {0} instead.'.format(type(mesh)))
+                        'Got {0} instead.'.format(type(mesh)))
     if not inplace:
         mesh = mesh.clone()
 

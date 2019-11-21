@@ -178,7 +178,7 @@ def realign(src: Union[torch.Tensor, PointCloud],
     tgt_max = tgt_max.unsqueeze(-2)
     # Center the pointclouds.
     src = src - src.mean(-2).unsqueeze(-2)
-    src = ( (tgt_max - tgt_min) / (src_max - src_min + EPS) ) * src
+    src = ((tgt_max - tgt_min) / (src_max - src_min + EPS)) * src
     # Undo the centering translation, and return the result.
     return src + tgt.mean(-2).unsqueeze(-2)
 
@@ -208,8 +208,7 @@ def normalize(cloud: Union[torch.Tensor, PointCloud],
     if not inplace:
         cloud = cloud.clone()
 
-    cloud = (cloud - cloud.mean(-2).unsqueeze(-2))\
-            / (cloud.std(-2).unsqueeze(-2) + EPS)
+    cloud = (cloud - cloud.mean(-2).unsqueeze(-2)) / (cloud.std(-2).unsqueeze(-2) + EPS)
 
     return cloud
 
@@ -218,7 +217,7 @@ def normalize(cloud: Union[torch.Tensor, PointCloud],
 if __name__ == '__main__':
 
     device = 'cpu'
-    
+
     # Test: realign
     src = torch.randn(2, 3, 4, 3).to(device)
     tgt = torch.rand(2, 3, 4, 3).to(device)
