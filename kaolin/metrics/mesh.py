@@ -42,7 +42,6 @@ import kaolin.cuda.tri_distance as td
 import numpy as np
 
 
-
 class TriangleDistanceFunction(torch.autograd.Function):
 
     @staticmethod
