@@ -28,7 +28,9 @@ def rotx(theta, enc='rad'):
     Note:
 
     .. math::
-        e_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}, e_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}, e_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}
+        e_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}
+        e_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}
+        e_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}
 
     Generated matrix:
 
@@ -107,7 +109,9 @@ def roty(theta, enc='rad'):
     Note:
 
     .. math::
-        e_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}, e_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}, e_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}
+        e_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}
+        e_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}
+        e_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}
 
     Generated matrix:
 
@@ -185,7 +189,9 @@ def rotz(theta, enc='rad'):
     Note:
 
     .. math::
-        e_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}, e_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}, e_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}
+        e_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \end{bmatrix}
+        e_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \end{bmatrix}
+        e_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \end{bmatrix}
 
     Generated matrix:
 
