@@ -1,4 +1,4 @@
-import torch 
+import torch
 from torch import nn
 import torch.nn.functional as F
 
@@ -17,7 +17,7 @@ class MeshEncoder(nn.Module):
         self.h21 = SimpleGCN(60, 60)
         self.h22 = SimpleGCN(60, 60)
         self.h23 = SimpleGCN(60, 60)
-        self.h24 = SimpleGCN(60,120)
+        self.h24 = SimpleGCN(60, 120)
         self.h3 = SimpleGCN(120, 120)
         self.h4 = SimpleGCN(120, 120)
         self.h41 = SimpleGCN(120, 150)
@@ -29,15 +29,15 @@ class MeshEncoder(nn.Module):
         self.h9 = SimpleGCN(300, 300)
         self.h10 = SimpleGCN(300, 300)
         self.h11 = SimpleGCN(300, 300)
-        self.reduce = SimpleGCN(300,latent_length) 
+        self.reduce = SimpleGCN(300, latent_length)
 
-    def resnet( self, features, res):
-        temp = features[:,:res.shape[1]]
+    def resnet(self, features, res):
+        temp = features[:, :res.shape[1]]
         temp = temp + res
-        features = torch.cat((temp,features[:,res.shape[1]:]), dim = 1)
+        features = torch.cat((temp, features[:, res.shape[1]:]), dim=1)
         return features, features
 
-    def forward(self, positions,  adj):
+    def forward(self, positions, adj):
         res = positions
         features = F.elu(self.h1(positions, adj))
         features = F.elu(self.h21(features, adj))
@@ -56,6 +56,6 @@ class MeshEncoder(nn.Module):
         features = F.elu(self.h10(features, adj))
         features = F.elu(self.h11(features, adj))
 
-        latent = F.elu(self.reduce(features , adj))  
-        latent = (torch.max(latent, dim = 0)[0])      
+        latent = F.elu(self.reduce(features, adj))
+        latent = torch.max(latent, dim=0)[0]
         return latent

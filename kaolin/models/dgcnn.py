@@ -56,7 +56,7 @@ def knn(x, k):
 
 class DGCNN(nn.Module):
     """Implementation of the DGCNNfor pointcloud classificaiton.
-    
+
     Args:
         input_dim (int): number of features per point. Default: ``3`` (xyz point coordinates)
         conv_dims (list): list of output feature dimensions of the convolutional layers. Default: ``[64,64,128,256]`` (as preoposed in original implementation).
@@ -70,7 +70,7 @@ class DGCNN(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{dgcnn,
@@ -101,16 +101,15 @@ class DGCNN(nn.Module):
 
         for it in range(len(self.conv_dims) - 1):
             # self.conv_layers.append(
-            self.__setattr__(f'conv_layers_{it}',
-                self.get_layer(
-                    nn.Sequential(
-                        nn.Conv2d(self.conv_dims[it] * 2,
-                                  self.conv_dims[it + 1],
-                                  kernel_size=1,
-                                  bias=False),
-                        nn.BatchNorm2d(self.conv_dims[it + 1]),
-                        nn.LeakyReLU(negative_slope=0.2))))
-        
+            self.__setattr__(f'conv_layers_{it}', self.get_layer(
+                             nn.Sequential(
+                                 nn.Conv2d(self.conv_dims[it] * 2,
+                                           self.conv_dims[it + 1],
+                                           kernel_size=1,
+                                           bias=False),
+                                 nn.BatchNorm2d(self.conv_dims[it + 1]),
+                                 nn.LeakyReLU(negative_slope=0.2))))
+
         # create intermediate embedding
         self.embedding_layer = self.get_layer(
             nn.Sequential(
@@ -120,13 +119,12 @@ class DGCNN(nn.Module):
         # fully connected layers
         self.fc_dims = [emb_dims * 2] + fc_dims
         for it in range(len(self.fc_dims) - 1):
-            self.__setattr__(f'fc_layers_{it}',
-                self.get_layer(
-                    nn.Sequential(
-                        nn.Linear(self.fc_dims[it], self.fc_dims[it + 1], bias=False),
-                        nn.BatchNorm1d(self.fc_dims[it + 1]),
-                        nn.LeakyReLU(negative_slope=0.2),
-                        nn.Dropout(p=dropout))))
+            self.__setattr__(f'fc_layers_{it}', self.get_layer(
+                             nn.Sequential(
+                                 nn.Linear(self.fc_dims[it], self.fc_dims[it + 1], bias=False),
+                                 nn.BatchNorm1d(self.fc_dims[it + 1]),
+                                 nn.LeakyReLU(negative_slope=0.2),
+                                 nn.Dropout(p=dropout))))
 
         # final output projection
         self.final_layer = self.get_layer(

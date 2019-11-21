@@ -35,15 +35,13 @@
 
 import math
 
-import torch 
-from torch import nn 
+import torch
+from torch import nn
 from torch.nn.parameter import Parameter
 import torch.nn.functional as F
 from torchvision import models
 import torch.distributions as dist
 
-import torch
-from torch.nn import Parameter
 
 class Resnet18(nn.Module):
     r''' ResNet-18 encoder network for image input.
@@ -72,6 +70,7 @@ class Resnet18(nn.Module):
         net = self.features(x)
         out = self.fc(net)
         return out
+
 
 def normalize_imagenet(x):
     ''' Normalize input images according to ImageNet standards.
@@ -151,8 +150,8 @@ def get_prior_z(device):
     '''
     z_dim = 0
     p0_z = dist.Normal(
-        torch.zeros(z_dim, device = device),
-        torch.ones(z_dim, device = device)
+        torch.zeros(z_dim, device=device),
+        torch.ones(z_dim, device=device)
     )
 
     return p0_z
@@ -217,7 +216,7 @@ class CResnetBlockConv1d(nn.Module):
         size_out (int): output dimension
         size_h (int): hidden dimension
         norm_method (str): normalization method
-        legacy (bool): whether to use legacy blocks 
+        legacy (bool): whether to use legacy blocks
     '''
 
     def __init__(self, c_dim, size_in, size_h=None, size_out=None,
@@ -278,7 +277,7 @@ class OccupancyNetwork(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @inproceedings{Occupancy Networks,
@@ -293,7 +292,7 @@ class OccupancyNetwork(nn.Module):
         super().__init__()
         self.device = device
         self.decoder = DecoderCBatchNorm(dim=3, z_dim=0, c_dim=256,
-            hidden_size=256).to(self.device)
+                                         hidden_size=256).to(self.device)
         self.encoder = Resnet18(256, normalize=True, use_linear=True).to(self.device)
 
         self.p0_z = get_prior_z(self.device)
@@ -335,7 +334,6 @@ class OccupancyNetwork(nn.Module):
             input (tensor): the input
         '''
         c = self.encoder(inputs)
-       
 
         return c
 
@@ -358,7 +356,7 @@ class OccupancyNetwork(nn.Module):
             occ (tensor): occupancy values for occ
             c (tensor): latent conditioned code c
         '''
-        
+
         batch_size = p.size(0)
         mean_z = torch.empty(batch_size, 0).to(self.device)
         logstd_z = torch.empty(batch_size, 0).to(self.device)
@@ -380,4 +378,3 @@ class OccupancyNetwork(nn.Module):
             z = z.expand(*size, *z.size())
 
         return z
-        

@@ -29,7 +29,7 @@ class Generator(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @inproceedings{3dgan,
@@ -40,7 +40,7 @@ class Generator(nn.Module):
               year={2016}
             }
 
-            
+
     """
 
     def __init__(self):
@@ -77,7 +77,7 @@ class Generator(nn.Module):
 
 class Discriminator(nn.Module):
     """TODO: Add docstring.
-    
+
     https://arxiv.org/abs/1610.07584
 
     Input shape: B x 1 x 32 x 32 x 32

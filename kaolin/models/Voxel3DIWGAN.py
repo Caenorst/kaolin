@@ -28,7 +28,7 @@ class Voxel3DIWGenerator(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{DBLP:journals/corr/SmithM17,

@@ -28,7 +28,7 @@ class PointNetFeatureExtractor(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2016pointnet,
@@ -203,7 +203,7 @@ class PointNetClassifier(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2016pointnet,
@@ -368,7 +368,7 @@ class PointNetSegmenter(nn.Module):
     .. note::
 
         If you use this code, please cite the original paper in addition to Kaolin.
-        
+
         .. code-block::
 
             @article{qi2016pointnet,
