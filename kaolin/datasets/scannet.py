@@ -35,8 +35,8 @@ class ScanNet(data.Dataset):
                  transform: Optional[Callable] = None,
                  label_transform: Optional[Callable] = None,
                  loader: Optional[Callable] = None,
-                 color_mean: Optional[list] = [0.,0.,0.],
-                 color_std: Optional[list] = [1.,1.,1.],
+                 color_mean: Optional[list] = [0., 0., 0.],
+                 color_std: Optional[list] = [1., 1., 1.],
                  load_depth: Optional[bool] = False,
                  seg_classes: Optional[str] = 'nyu40'):
         self.root_dir = root_dir
@@ -62,7 +62,7 @@ class ScanNet(data.Dataset):
         # Get test data and labels filepaths
         self.data, self.depth, self.labels = get_filenames_scannet(
             self.root_dir, self.scene_id)
-        self.length += len(self.data)        
+        self.length += len(self.data)
 
     def __getitem__(self, index):
         """ Returns element at index in the dataset.
@@ -77,9 +77,10 @@ class ScanNet(data.Dataset):
 
         if self.load_depth is True:
 
-            data_path, depth_path, label_path = self.data[index], self.depth[index], self.labels[index]
-            rgbd, label = self.loader(data_path, depth_path, label_path, self.color_mean, self.color_std, \
-                self.seg_classes)
+            data_path, depth_path, label_path = self.data[index], self.depth[index], \
+                self.labels[index]
+            rgbd, label = self.loader(data_path, depth_path, label_path, self.color_mean,
+                                      self.color_std, self.seg_classes)
             return rgbd, label, data_path, depth_path, label_path
 
         else:
@@ -190,15 +191,13 @@ class ScanNet(data.Dataset):
             files = natsorted(files)
             for file in files:
                 filename, _ = os.path.splitext(file)
-                depthfile = os.path.join(base_dir, scene_id, 'depth',
-                    filename + '.png')
-                labelfile = os.path.join(base_dir, scene_id, 'label',
-                    filename + '.png')
+                depthfile = os.path.join(base_dir, scene_id, 'depth', filename + '.png')
+                labelfile = os.path.join(base_dir, scene_id, 'label', filename + '.png')
                 # Add this file to the list of train samples, only if its
                 # corresponding depth and label files exist.
                 if os.path.exists(depthfile) and os.path.exists(labelfile):
-                    color_images.append(os.path.join(base_dir, scene_id,
-                        'color', filename + '.jpg'))
+                    color_images.append(os.path.join(base_dir, scene_id, 'color',
+                                                     filename + '.jpg'))
                     depth_images.append(depthfile)
                     labels.append(labelfile)
 
@@ -229,18 +228,22 @@ class ScanNet(data.Dataset):
         # do not contain "name_filter"
         if name_filter is None:
             # This looks hackish...there is probably a better way
-            name_cond = lambda filename: True
+            def name_cond(filename):
+                return True
         else:
-            name_cond = lambda filename: name_filter in filename
+            def name_cond(filename):
+                return name_filter in filename
 
         # Extension filter: if not specified don't filter (condition always
         # true); otherwise, use a lambda expression to filter out files whose
         # extension is not "extension_filter"
         if extension_filter is None:
             # This looks hackish...there is probably a better way
-            ext_cond = lambda filename: True
+            def ext_cond(filename):
+                return True
         else:
-            ext_cond = lambda filename: filename.endswith(extension_filter)
+            def ext_cond(filename):
+                return filename.endswith(extension_filter)
 
         filtered_files = []
 
@@ -256,8 +259,8 @@ class ScanNet(data.Dataset):
         return filtered_files
 
     def scannet_loader(self, data_path: str, label_path: str,
-                       color_mean: Optional[list] = [0.,0.,0.],
-                       color_std: Optional[list] = [1.,1.,1.],
+                       color_mean: Optional[list] = [0., 0., 0.],
+                       color_std: Optional[list] = [1., 1., 1.],
                        seg_classes: str = 'nyu40'):
         """Loads a sample and label image given their path as PIL images
         (nyu40 classes).
@@ -294,11 +297,10 @@ class ScanNet(data.Dataset):
 
         return data, label
 
-
     def scannet_loader_depth(self, data_path: str, depth_path: str,
                              label_path: str,
-                             color_mean: Optional[list] = [0.,0.,0.],
-                             color_std: Optional[list] = [1.,1.,1.],
+                             color_mean: Optional[list] = [0., 0., 0.],
+                             color_std: Optional[list] = [1., 1., 1.],
                              seg_classes: Optional[str] = 'nyu40'):
         """Loads a sample and label image given their path as PIL images
         (nyu40 classes).
@@ -346,7 +348,6 @@ class ScanNet(data.Dataset):
 
         return data, label
 
-
     def nyu40_to_scannet20(self, label: str):
         """Remap a label image from the 'nyu40' class palette to the
         'scannet20' class palette """
@@ -372,7 +373,7 @@ class ScanNet(data.Dataset):
                      (37, 0), (38, 0), (40, 0), (14, 13), (16, 14), (24, 15),
                      (28, 16), (33, 17), (34, 18), (36, 19), (39, 20)]
         for src, tar in remapping:
-            label[np.where(label==src)] = tar
+            label[np.where(label == src)] = tar
         return label
 
     def create_label_image(output, color_palette):
@@ -387,9 +388,9 @@ class ScanNet(data.Dataset):
             for each class.
 
         """
-        
+
         label_image = np.zeros((output.shape[0], output.shape[1], 3),
                                dtype=np.uint8)
         for idx, color in enumerate(color_palette):
-            label_image[output==idx] = color
+            label_image[output == idx] = color
         return label_image

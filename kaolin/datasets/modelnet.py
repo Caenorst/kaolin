@@ -60,10 +60,10 @@ class ModelNet10(torch.utils.data.Dataset):
 
         if rep.lower() not in ['mesh', 'pointcloud']:
             raise ValueError('Argument \'rep\' must be one of \'mesh\' '
-                ' or \'pointcloud\'. Got {0} instead.'.format(rep))
+                             ' or \'pointcloud\'. Got {0} instead.'.format(rep))
         if split.lower() not in ['train', 'test']:
             raise ValueError('Argument \'split\' must be one of \'train\' '
-                ' or \'test\'. Got {0} instead.'.format(split))
+                             ' or \'test\'. Got {0} instead.'.format(split))
 
         self.categories = categories
         self.paths = []
@@ -72,8 +72,8 @@ class ModelNet10(torch.utils.data.Dataset):
 
             if cat not in _MODELNET10_CLASSES:
                 raise ValueError('Invalid ModelNet10 class {0}. Valid classes '
-                    ' are {1}'.format(cat, _MODELNET10_CLASSES))
-            
+                                 ' are {1}'.format(cat, _MODELNET10_CLASSES))
+
             catdir = os.path.join(basedir, cat, split)
             for path in glob(os.path.join(catdir, '*.off')):
                 self.paths.append(path)
@@ -95,7 +95,7 @@ class ModelNet10(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         r"""Returns the item at index `idx`. """
-        
+
         mesh = kal.rep.TriangleMesh.from_off(self.paths[idx])
         mesh.to(self.device)
         label = torch.LongTensor([self.labels[idx]]).to(self.device)
@@ -125,7 +125,7 @@ class ModelNetVoxels(object):
 
     Returns:
         .. code-block::
-        
+
         dict: {
             'attributes': {'name': str, 'class': str},
             'data': {'voxels': torch.Tensor}
@@ -174,7 +174,6 @@ class ModelNetVoxels(object):
         if sys.platform.startswith('win'):
             object_path = object_path.replace('\\', '/')
 
-        
         object_class = object_path.split('/')[-4]
         object_name = object_path.split('/')[-1]
         object_data = sio.loadmat(object_path)['instance']

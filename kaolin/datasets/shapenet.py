@@ -19,26 +19,19 @@ import torch
 import torch.utils.data as data
 import warnings
 import urllib.request
-import zipfile
 import json
 import re
 from collections import OrderedDict
-from glob import glob
 import numpy as np
 import random
 
 from tqdm import tqdm
-import scipy.sparse
-import tarfile
 from PIL import Image
 
 import kaolin as kal
 from kaolin.rep.TriangleMesh import TriangleMesh
-from kaolin.rep.QuadMesh import QuadMesh
 
 from kaolin.transforms import pointcloudfunc as pcfunc
-from kaolin.transforms import meshfunc
-from kaolin.transforms import voxelfunc
 from kaolin.transforms import transforms as tfs
 from kaolin import helpers
 import kaolin.conversions.meshconversions as mesh_cvt
@@ -122,7 +115,6 @@ def download_images(shapenet_root: str):
     NotImplemented
 
 
-
 def _convert_categories(categories):
     assert categories is not None, 'List of categories cannot be empty!'
     if not (c in synset_to_label.keys() + label_to_synset.keys()
@@ -149,7 +141,7 @@ class ShapeNet_Meshes(data.Dataset):
 
     Returns:
         .. code-block::
-        
+
         dict: {
             attributes: {name: str, path: str, synset: str, label: str},
             data: {vertices: torch.Tensor, faces: torch.Tensor}
@@ -451,7 +443,7 @@ class ShapeNet_Surface_Meshes(data.Dataset):
     """
 
     def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
-                 download: bool = True, split: float = .7, resolution: int = 100, 
+                 download: bool = True, split: float = .7, resolution: int = 100,
                  smoothing_iterations: int = 3, mode='Tri', no_progress: bool = False):
         assert mode in ['Tri', 'Quad']
 
@@ -493,7 +485,7 @@ class ShapeNet_Surface_Meshes(data.Dataset):
 
         def convert(og_mesh, voxel):
             transforms = tfs.Compose([mesh_conversion,
-                    tfs.MeshLaplacianSmoothing(smoothing_iterations)])
+                                      tfs.MeshLaplacianSmoothing(smoothing_iterations)])
 
             new_mesh = transforms(voxel)
             new_mesh.vertices = pcfunc.realign(new_mesh.vertices, og_mesh.vertices)
@@ -679,8 +671,9 @@ class ShapeNet_SDF_Points(data.Dataset):
     """
 
     def __init__(self, root: str = '../data/', categories: list = ['chair'], train: bool = True,
-                 download: bool = True, split: float = .7, resolution: int = 100, num_points: int = 5000,
-                 occ: bool = False, smoothing_iterations: int = 3, sample_box=True,  no_progress: bool = False):
+                 download: bool = True, split: float = .7, resolution: int = 100,
+                 num_points: int = 5000, occ: bool = False, smoothing_iterations: int = 3,
+                 sample_box=True, no_progress: bool = False):
         self.root = Path(root)
         self.shapenet_root = self.root / 'ShapeNet'
         self.cache_dir = self.shapenet_root / 'sdf_points'
@@ -771,12 +764,12 @@ class ShapeNet_Tags(data.Dataset):
     r"""ShapeNet Dataset class for tags.
 
     Args:
-        dataset (kal.dataloader.shapenet.ShapeNet): One of the ShapeNet datasets 
+        dataset (kal.dataloader.shapenet.ShapeNet): One of the ShapeNet datasets
         download (bool): If True will load taxonomy of objects if it is not loaded yet
         transform (...) : transformation to apply to tags
 
     Returns:
-        dict: Dictionary with key for the input tags encod and : 'tag_enc': 
+        dict: Dictionary with key for the input tags encod and : 'tag_enc':
 
     Example:
         >>> from torch.utils.data import DataLoader
@@ -903,11 +896,11 @@ class ShapeNet_Tags(data.Dataset):
 
             if matchObj:
                 sid = c['synsetId']
-                if not sid in synsetIds:
+                if sid not in synsetIds:
                     synsetIds.append(sid)
                     tags.append(tag)
                 for childId in c['children']:
-                    if not childId in children:
+                    if childId not in children:
                         children.append(childId)
                         parent_tags.append(tag)
 
@@ -916,13 +909,13 @@ class ShapeNet_Tags(data.Dataset):
             new_parent_tags = []
             for c in taxonomy:
                 sid = c['synsetId']
-                if sid in children and not sid in synsetIds:
+                if sid in children and sid not in synsetIds:
                     synsetIds.append(sid)
                     i = children.index(sid)
                     tag = c['name'] + ',' + parent_tags[i]
                     tags.append(tag)
                     for childId in c['children']:
-                        if not childId in new_children:
+                        if childId not in new_children:
                             new_children.append(childId)
                             new_parent_tags.append(tag)
 
@@ -955,15 +948,15 @@ class ShapeNet_Tags(data.Dataset):
             return tag_list, 0
         else:
             tags_to_keep = np.random.randint(1, len(tag_list) + 1)
-            res_tag_ind  = np.random.choice(range(len(tag_list)),
-                                            tags_to_keep,
-                                            replace=False)
+            res_tag_ind = np.random.choice(range(len(tag_list)),
+                                           tags_to_keep,
+                                           replace=False)
             max_ind = max(res_tag_ind)
             res_tag_list = [tag_list[el] for el in res_tag_ind]
             return res_tag_list, max_ind
 
     def tag_proc(self, tag_list):
-        """Get the embedding from the list of tags. By default this functions does 
+        """Get the embedding from the list of tags. By default this functions does
         one-hot encoding of the tags, but can be replaced by more complex encodings.
 
         Args:
@@ -993,7 +986,7 @@ class ShapeNet_Tags(data.Dataset):
             input_tags, last_tag_id = self.rand_drop_tag(full_tag)
         else:
             input_tags = full_tag
-            last_tag_id = len(full_tag)-1
+            last_tag_id = len(full_tag) - 1
 
         # tag encodings
         data['tag_inp'] = self.tag_proc(input_tags)
@@ -1049,7 +1042,7 @@ class ShapeNet_Combination(data.Dataset):
         distance
         points
         normals
-        
+
     """
 
     def __init__(self, datasets):

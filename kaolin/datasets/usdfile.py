@@ -16,7 +16,7 @@ import logging as log
 import torch
 from torch.utils import data
 from pathlib import Path
-from pxr import Usd, UsdGeom, UsdLux, Sdf, Gf, Vt
+from pxr import Usd, UsdGeom
 
 from kaolin import helpers
 
@@ -68,7 +68,7 @@ class USDMeshes(data.Dataset):
             face_counts = torch.tensor(mesh.GetFaceVertexCountsAttr().Get())
             if not torch.allclose(face_counts, face_counts[0]):
                 log.warn(f'Skipping mesh {name}, not all faces have the same '
-                             'number of vertices.')
+                         'number of vertices.')
             else:
                 self.cache(name, usd_mesh=mesh)
 
