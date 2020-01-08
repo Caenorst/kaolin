@@ -1,4 +1,4 @@
-from mpl_toolkits.mplot3d import Axes3D     # unused import necessary to have access to 3d projection
+from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 # unused import necessary to have access to 3d projection
 import matplotlib.pyplot as plt
 
 

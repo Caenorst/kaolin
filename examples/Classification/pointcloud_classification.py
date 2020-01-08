@@ -1,6 +1,6 @@
 import torch
 from torch.utils.data import DataLoader
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
 import kaolin as kal
 
@@ -15,16 +15,15 @@ data = kal.datasets.ModelNet10('/path/to/ModelNet10',
                                transform=normpc, device=device)
 loader = DataLoader(data, batch_size=12, shuffle=True)
 val_data = kal.datasets.ModelNet10('/path/to/ModelNet10',
-                               categories=['bed', 'bathtub'],
-                               split='test', rep='pointcloud',
-                               transform=normpc, device=device)
+                                   categories=['bed', 'bathtub'],
+                                   split='test', rep='pointcloud',
+                                   transform=normpc, device=device)
 val_loader = DataLoader(val_data, batch_size=10, shuffle=False)
 model = kal.models.PointNet.PointNetClassifier(num_classes=2).to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 criterion = torch.nn.CrossEntropyLoss()
 
 for e in range(epochs):
-
     print('###################')
     print('Epoch:', e)
     print('###################')
@@ -45,8 +44,8 @@ for e in range(epochs):
 
         # Compute accuracy
         pred_label = torch.argmax(pred, dim=1)
-        train_accuracy += torch.mean((pred_label == batch[1].view(-1)).float(
-            )).detach().cpu().item()
+        train_accuracy += torch.mean((pred_label == batch[1].view(-1))
+                                     .float()).detach().cpu().item()
         num_batches += 1
 
     print('Train loss:', train_loss / num_batches)
@@ -66,8 +65,8 @@ for e in range(epochs):
 
             # Compute accuracy
             pred_label = torch.argmax(pred, dim=1)
-            val_accuracy += torch.mean((pred_label == batch[1].view(-1)).float(
-                )).cpu().item()
+            val_accuracy += torch.mean((pred_label == batch[1].view(-1))
+                                       .float()).cpu().item()
             num_batches += 1
 
     print('Val loss:', val_loss / num_batches)

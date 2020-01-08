@@ -1,6 +1,4 @@
-import torch
 from torch.utils.data import DataLoader
-import kaolin as kal
 from kaolin import ClassificationEngine
 from kaolin.datasets import ModelNet10
 from kaolin.models.PointNet import PointNetClassifier as PointNet
