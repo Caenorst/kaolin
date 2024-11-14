@@ -33,7 +33,8 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
-    'kaolin_ext'
+    'kaolin_ext',
+    'sphinxcontrib.googleanalytics'
 ]
 
 todo_include_todos = True
@@ -76,3 +77,6 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["static"]
+
+# Google analytics ID
+googleanalytics_id = 'G-5SC4NP45F7'
