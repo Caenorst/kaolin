@@ -6,3 +6,4 @@ tqdm>=4.51.0
 scipy
 pygltflib
 warp-lang
+googleanalytics @ git+https://github.com/sphinx-contrib/googleanalytics
