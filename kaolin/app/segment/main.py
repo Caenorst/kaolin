@@ -64,6 +64,7 @@ if __name__ == '__main__':
     """
     parser = simple_parsing.ArgumentParser('Segmentation App')
     parser.add_argument('--port', default=8001, type=int)
+    parser.add_argument('--debug', action='store_true', default=False)
     parser.add_argument('--rep', type=str, default='splat')
     parser.add_argument('--input_scene', type=str, #required=True,
                         default='/mnt/masha_prev_2/Experiments/GSplats/inria/output/knit_meow/extra/baked.knit_meow.ply',
@@ -104,7 +105,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------------------------------------------------------
     # WebappBuilder: helps us create the whole app - layout, websockets, UI, etc.
     # ------------------------------------------------------------------------------------------------------------------
-    app_builder = WebappBuilder(debug=False)
+    app_builder = WebappBuilder(debug=args.debug)
     app_builder.add_raw_body_html(SVG_FILTER)  # Styling for the mask layer
     app_builder.add_raw_body_html(DEBUG_PANEL_HTML)
 

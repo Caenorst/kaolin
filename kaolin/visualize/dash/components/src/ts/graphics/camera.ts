@@ -39,7 +39,7 @@ export interface CameraOrthoIntrinsics {
 export interface CameraExtrinsics {
     // 4x4 matrix; `Float32Array[]` is the per-row typed-array form produced when a
     // Python `as_dict()` camera is decoded from the binary wire format (util/io).
-    view_matrix: number[][] | number[][][] | Float32Array | Float32Array[] | number[];
+    view_matrix: number[][] | number[][][] | Float32Array | Float32Array[] | number[] | any[];
 }
 
 export interface CameraParameters {

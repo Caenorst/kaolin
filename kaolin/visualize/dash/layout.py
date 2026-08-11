@@ -131,7 +131,7 @@ class StandardLayoutHelper(AppLayoutHelper):
         extra_classes = _width_to_class(width) if width is not None else ''
 
         if min_width_px is not None:
-            self.sidebar_extra_styles['min-width'] = f'{min_width_px}px'
+            self.sidebar_extra_styles['minWidth'] = f'{min_width_px}px'
 
         self.sidebar_content = html.Div(children=[], className='kaolin-sidebar-content')
         children = [self.sidebar_content]
