@@ -25,7 +25,7 @@ type Props = {
      * WebSocket server addresses to connect to.
      * Each element is either a string (address) or [address, id] tuple.
      */
-    websocket_addresses?: (string | string[])[];
+    websocket_addresses?: (string | [string, string])[];
 
     /** Starting camera paremters. */
     camera_parameters?: graphics.camera.CameraParameters;
@@ -80,7 +80,7 @@ type Props = {
      * Initial active state is expected to be baked into the per-behavior
      * `isActive` flags in `behaviors`; see `ViewerBuilder.set_active_mode`.
      */
-    modes?: [string, string[] | any, string | null, string | null][];
+    modes?: [string, string[], string | null, string | null][];
 
     /**
      * If set, enables an in-viewer FPS overlay driven by incoming WebSocket
